@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'buttom_button.dart';
-import 'app_drawer.dart';
+import 'package:go_router/go_router.dart';
+import 'parts/buttom_button.dart';
+import 'parts/app_drawer.dart';
 
 class ProfileList extends StatefulWidget {
   const ProfileList({super.key});
@@ -62,33 +63,38 @@ class ProfileListState extends State<ProfileList> {
                   itemCount: profiles.length,
                   itemBuilder: (context, index) {
                     final profile = profiles[index];
-                    return Card(
-                      elevation: 0, // 影を取り除く
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(30),
-                              child: Image.network(
-                                profile['profileImage'],
-                                fit: BoxFit.cover,
-                                width: 120,
-                                height: 120,
+                    return GestureDetector(
+                      onTap: () {
+                        context.go('/profile_detail/${profile.id}');
+                      },
+                      child: Card(
+                        elevation: 0, // 影を取り除く
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child: Image.network(
+                                  profile['profileImage'],
+                                  fit: BoxFit.cover,
+                                  width: 120,
+                                  height: 120,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              profile['name'],
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              '年齢: ${profile['age']}\n好きなスポーツ: \n${profile['sports']}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
+                              const SizedBox(height: 10),
+                              Text(
+                                profile['name'],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 20),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                '年齢: ${profile['age']}\n好きなスポーツ: \n${profile['sports']}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

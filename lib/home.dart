@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'app_drawer.dart';
-import 'buttom_button.dart';
-import 'sign_up_with_google.dart';
-import 'sign_up_with_apple.dart';
+import 'parts/app_drawer.dart';
+import 'parts/buttom_button.dart';
+import 'parts/sign_up_with_google.dart';
+import 'parts/sign_up_with_apple.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

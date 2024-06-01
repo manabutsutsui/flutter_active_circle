@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 // import 'package:go_router/go_router.dart';
-import 'app_drawer.dart';
-import 'buttom_button.dart';
-import 'sign_up_with_google.dart';
+import 'parts/app_drawer.dart';
+import 'parts/buttom_button.dart';
+import 'parts/sign_up_with_google.dart';
+import 'parts/sign_up_with_apple.dart';
 
 class LoginPrompt extends StatelessWidget {
   const LoginPrompt({super.key});
@@ -37,6 +38,7 @@ class LoginPrompt extends StatelessWidget {
           Text('プロフィールを作成するには、アカウントの作成が必要です。'),
           SizedBox(height: 10),
           SignUpWithGoogle(),
+          SignUpWithApple(),
         ],
       ),
     ),

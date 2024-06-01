@@ -5,8 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'app_drawer.dart';
-import 'buttom_button.dart';
+import 'parts/app_drawer.dart';
+import 'parts/buttom_button.dart';
 import 'login_prompt.dart';
 
 class Profile extends StatefulWidget {
@@ -159,7 +159,7 @@ class ProfileState extends State<Profile> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const Text('プロフィールを設定してください',
+              const Text('あなたのプロフィールを設定してください',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
                 controller: _nameController,
