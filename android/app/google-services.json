@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "909258711043",
+    "project_id": "active-circle-prod",
+    "storage_bucket": "active-circle-prod.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909258711043:android:6110b72ba2d2d137feee36",
+        "android_client_info": {
+          "package_name": "com.example.active_circle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAnKBibBdgDquKbnFugoTLg9Gn33tc3DI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
