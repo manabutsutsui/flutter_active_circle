@@ -6,6 +6,7 @@ import 'home.dart';
 import 'profile.dart';
 import 'profile_list.dart';
 import 'profile_detail.dart';
+import 'message_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,10 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/profile_detail/:profileId',
           builder: (context, state) => ProfileDetail(profileId: state.pathParameters['profileId']!),
+        ),
+        GoRoute(
+          path: '/message_list',
+          builder: (context, state) => const MessageList(),
         ),
       ],
     );

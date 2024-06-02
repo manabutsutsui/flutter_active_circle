@@ -25,8 +25,8 @@ class ButtomButton extends StatelessWidget {
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            icon: const Icon(Icons.message),
+            onPressed: () => context.go('/message_list'),
           ),
           IconButton(
             icon: const Icon(Icons.person),

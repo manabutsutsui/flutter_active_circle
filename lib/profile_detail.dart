@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
+import 'message.dart';
 
 class ProfileDetail extends StatelessWidget {
   final String profileId;
@@ -51,73 +52,105 @@ class ProfileDetail extends StatelessWidget {
                     child: Image.network(
                       profile['profileImage'],
                       fit: BoxFit.cover,
-                      width: 200,
-                      height: 200,
+                      width: 300,
+                      height: 300,
                     ),
                   ),
                   const SizedBox(height: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
-                          children: <TextSpan>[
-                            const TextSpan(
-                              text: '名前: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-                            ),
-                            TextSpan(
-                              text: profile['name'],
-                              style: const TextStyle(fontSize: 24),
-                            ),
-                          ],
+                      SizedBox(
+                        width: 300,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                            children: <TextSpan>[
+                              const TextSpan(
+                                text: '名前: ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 24),
+                              ),
+                              TextSpan(
+                                text: profile['name'],
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
-                          children: <TextSpan>[
-                            const TextSpan(
-                              text: '年齢: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: profile['age'].toString(),
-                            ),
-                          ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: 300,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                            children: <TextSpan>[
+                              const TextSpan(
+                                text: '年齢: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: profile['age'].toString(),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
-                          children: <TextSpan>[
-                            const TextSpan(
-                              text: '好きなスポーツ: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: profile['sports'],
-                            ),
-                          ],
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: 300,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                            children: <TextSpan>[
+                              const TextSpan(
+                                text: '好きなスポーツ: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: profile['sports'],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
-                          children: <TextSpan>[
-                            const TextSpan(
-                              text: '実績・経験: ',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: profile['experience'],
-                            ),
-                          ],
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: 300,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                            children: <TextSpan>[
+                              const TextSpan(
+                                text: '実績・経験: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: profile['experience'],
+                              ),
+                            ],
+                          ),
                         ),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MessageScreen(
+                                recipientId: profileId,
+                                recipientName: profile['name'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('${profile['name']}さんにメッセージを送信'),
                       ),
                     ],
                   ),
@@ -131,4 +164,3 @@ class ProfileDetail extends StatelessWidget {
     );
   }
 }
-
