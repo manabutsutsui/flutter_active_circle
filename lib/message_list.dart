@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
 import 'parts/buttom_button.dart';
+import 'package:intl/intl.dart';
 
 class MessageList extends StatefulWidget {
   const MessageList({super.key});
@@ -89,6 +90,10 @@ class _MessageListState extends State<MessageList> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (snapshot.hasError) {
+            return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+          }
+
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('メッセージがありません'));
           }
@@ -97,9 +102,15 @@ class _MessageListState extends State<MessageList> {
             children: snapshot.data!.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
               return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(data['senderImage']),
+                  radius: 32, // 48 / 2 to maintain the same size
+                ),
                 title: Text(data['message'] ?? 'No message'),
                 subtitle: Text('From: ${data['senderName'] ?? 'Unknown'}'),
-                trailing: Text(data['timestamp']?.toDate().toString() ?? ''),
+                trailing: Text(
+                  DateFormat('MM月dd日 HH:mm').format((data['timestamp'] as Timestamp).toDate()),
+                ),
               );
             }).toList(),
           );

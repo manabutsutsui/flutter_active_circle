@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
@@ -138,20 +139,22 @@ class ProfileDetail extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MessageScreen(
-                                recipientId: profileId,
-                                recipientName: profile['name'],
-                              ),
+                      profileId == FirebaseAuth.instance.currentUser!.uid
+                          ? const SizedBox()
+                          : ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MessageScreen(
+                                      recipientId: profileId,
+                                      recipientName: profile['name'],
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text('${profile['name']}さんにメッセージを送信'),
                             ),
-                          );
-                        },
-                        child: Text('${profile['name']}さんにメッセージを送信'),
-                      ),
                     ],
                   ),
                 ],

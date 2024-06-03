@@ -6,8 +6,11 @@ class MessageScreen extends StatefulWidget {
   final String recipientId;
   final String recipientName;
 
-  const MessageScreen(
-      {super.key, required this.recipientId, required this.recipientName});
+  const MessageScreen({
+    super.key,
+    required this.recipientId,
+    required this.recipientName,
+  });
 
   @override
   MessageScreenState createState() => MessageScreenState();
@@ -26,12 +29,14 @@ class MessageScreenState extends State<MessageScreen> {
             .get();
 
         final senderName = userProfile.data()?['name'] ?? 'Unknown';
+        final senderImage = userProfile.data()?['profileImage'] ?? '';
 
         await FirebaseFirestore.instance.collection('messages').add({
           'recipientId': widget.recipientId,
           'recipientName': widget.recipientName,
           'senderId': user.uid,
           'senderName': senderName,
+          'senderImage': senderImage,
           'message': _controller.text,
           'timestamp': FieldValue.serverTimestamp(),
         });
