@@ -2,52 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class MessageScreen extends StatefulWidget {
+class ReplyScreen extends StatefulWidget {
+  final String senderId;
+  final String senderName;
   final String recipientId;
   final String recipientName;
+  final String senderImage;
 
-  const MessageScreen({
-    super.key,
-    required this.recipientId,
-    required this.recipientName,
-  });
+  const ReplyScreen(
+      {required this.senderId,
+      required this.senderName,
+      required this.recipientId,
+      required this.recipientName,
+      required this.senderImage,
+      super.key});
 
   @override
-  MessageScreenState createState() => MessageScreenState();
+  State<ReplyScreen> createState() => _ReplyScreenState();
 }
 
-class MessageScreenState extends State<MessageScreen> {
+class _ReplyScreenState extends State<ReplyScreen> {
   final TextEditingController _controller = TextEditingController();
 
   void _sendMessage() async {
-    if (_controller.text.isNotEmpty) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userProfile = await FirebaseFirestore.instance
-            .collection('profiles')
-            .doc(user.uid)
-            .get();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && _controller.text.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('messages').add({
+        'senderId': widget.senderId,
+        'senderName': widget.senderName,
+        'senderImage': widget.senderImage,
+        'recipientId': widget.recipientId,
+        'recipientName': widget.recipientName,
+        'message': _controller.text,
+        'timestamp': Timestamp.now(),
+        'isRead': false,
+      });
 
-        final senderName = userProfile.data()?['name'] ?? 'Unknown';
-        final senderImage = userProfile.data()?['profileImage'] ?? '';
-
-        await FirebaseFirestore.instance.collection('messages').add({
-          'recipientId': widget.recipientId,
-          'recipientName': widget.recipientName,
-          'senderId': user.uid,
-          'senderName': senderName,
-          'senderImage': senderImage,
-          'message': _controller.text,
-          'timestamp': FieldValue.serverTimestamp(),
-          'isRead': false,
-        });
-
-        if (mounted) {
-          _controller.clear();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('メッセージが送信されました')),
-          );
-        }
+      if (mounted) {
+        _controller.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('メッセージが送信されました')),
+        );
       }
     }
   }

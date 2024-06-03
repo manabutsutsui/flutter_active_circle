@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
 import 'parts/buttom_button.dart';
+import 'reply.dart';
 import 'package:intl/intl.dart';
 
 class MessageList extends StatefulWidget {
@@ -15,6 +16,24 @@ class MessageList extends StatefulWidget {
 }
 
 class _MessageListState extends State<MessageList> {
+  String? userProfileImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfileImage();
+  }
+
+  Future<void> _loadUserProfileImage() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('profiles').doc(user.uid).get();
+      setState(() {
+        userProfileImage = doc.data()?['profileImage'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -104,13 +123,61 @@ class _MessageListState extends State<MessageList> {
               return ListTile(
                 leading: CircleAvatar(
                   backgroundImage: NetworkImage(data['senderImage']),
-                  radius: 32, // 48 / 2 to maintain the same size
+                  radius: 32,
                 ),
-                title: Text(data['message'] ?? 'No message'),
+                title: Text(
+                  data['message'] ?? 'No message',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: (data['isRead'] ?? false) ? FontWeight.normal : FontWeight.bold,
+                  ),
+                ),
                 subtitle: Text('From: ${data['senderName'] ?? 'Unknown'}'),
                 trailing: Text(
                   DateFormat('MM月dd日 HH:mm').format((data['timestamp'] as Timestamp).toDate()),
                 ),
+                onTap: () {
+                  // メッセージを既読にする
+                  FirebaseFirestore.instance
+                      .collection('messages')
+                      .doc(doc.id)
+                      .update({'isRead': true});
+
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('メッセージ詳細'),
+                        content: Text(data['message'] ?? 'No message'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => ReplyScreen(
+                                    senderId: data['recipientId'],
+                                    senderName: data['recipientName'],
+                                    recipientId: data['senderId'],
+                                    recipientName: data['senderName'],
+                                    senderImage: userProfileImage ?? '', // ログインユーザーの画像を送信
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text('${data['senderName']}に返信する'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('閉じる'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               );
             }).toList(),
           );

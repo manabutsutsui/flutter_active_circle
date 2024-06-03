@@ -27,17 +27,24 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('プロフィール'),
-            leading: const Icon(Icons.person),
-            onTap: () {
-              context.go('/profile');
-            },
-          ),
-          ListTile(
             title: const Text('一覧'),
             leading: const Icon(Icons.list),
             onTap: () {
               context.go('/profile_list');
+            },
+          ),
+          ListTile(
+            title: const Text('メッセージ'),
+            leading: const Icon(Icons.message),
+            onTap: () {
+              context.go('/message_list');
+            },
+          ),
+          ListTile(
+            title: const Text('プロフィール'),
+            leading: const Icon(Icons.person),
+            onTap: () {
+              context.go('/profile');
             },
           ),
           if (_auth.currentUser != null) // ログインしている場合のみ表示
