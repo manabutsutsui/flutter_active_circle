@@ -72,8 +72,7 @@ class MessageScreenState extends State<MessageScreen> {
           icon: const Icon(Icons.arrow_back),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Text(

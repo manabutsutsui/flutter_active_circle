@@ -161,14 +161,16 @@ class HomeScreenState extends State<HomeScreen>
         ),
       ),
       drawer: AppDrawer(),
-      body: Column(
-        children: [
-          buildPageView(),
-          const SizedBox(height: 40),
-          buildFadeTransition(),
-          const SizedBox(height: 40),
-          buildButtons(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            buildPageView(),
+            const SizedBox(height: 40),
+            buildFadeTransition(),
+            const SizedBox(height: 40),
+            buildButtons(),
+          ],
+        ),
       ),
       bottomNavigationBar: const Column(
         mainAxisSize: MainAxisSize.min,

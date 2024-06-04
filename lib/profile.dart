@@ -117,7 +117,7 @@ class ProfileState extends State<Profile> {
           .get();
       if (doc.exists) {
         setState(() {
-          _isEditing = true; // データが存在するため、編集モード��設定
+          _isEditing = true; // データが存在するため、編集モード設定
         });
         final data = doc.data();
         _nameController.text = data?['name'] ?? '';
@@ -162,7 +162,7 @@ class ProfileState extends State<Profile> {
           ),
         ),
         drawer: AppDrawer(),
-        body: Padding(
+        body: SingleChildScrollView( // SingleChildScrollViewでラップする
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [

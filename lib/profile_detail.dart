@@ -44,7 +44,7 @@ class ProfileDetail extends StatelessWidget {
 
           final profile = snapshot.data!.data() as Map<String, dynamic>;
 
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child: Column(

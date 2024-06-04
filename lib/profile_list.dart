@@ -88,11 +88,13 @@ class ProfileListState extends State<ProfileList> {
                                 profile['name'],
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 20),
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 5),
                               Text(
                                 '年齢: ${profile['age']}\n好きなスポーツ: \n${profile['sports']}',
                                 style: const TextStyle(fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -116,4 +118,3 @@ class ProfileListState extends State<ProfileList> {
     );
   }
 }
-
