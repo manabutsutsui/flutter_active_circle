@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
 import 'parts/app_drawer.dart';
+import 'parts/ad_banner.dart';
 
 class ProfileList extends StatefulWidget {
   const ProfileList({super.key});
@@ -105,7 +106,13 @@ class ProfileListState extends State<ProfileList> {
           );
         },
       ),
-      bottomNavigationBar: const ButtomButton(),
+      bottomNavigationBar: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AdBanner(),
+          ButtomButton(),
+        ],
+      ),
     );
   }
 }

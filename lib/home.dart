@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/app_drawer.dart';
+import 'parts/ad_banner.dart';
 import 'parts/buttom_button.dart';
 import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
@@ -169,7 +170,13 @@ class HomeScreenState extends State<HomeScreen>
           buildButtons(),
         ],
       ),
-      bottomNavigationBar: const ButtomButton(),
+      bottomNavigationBar: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AdBanner(),
+          ButtomButton(),
+        ],
+      ),
     );
   }
 }

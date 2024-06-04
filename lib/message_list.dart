@@ -6,6 +6,7 @@ import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
 import 'parts/buttom_button.dart';
 import 'reply.dart';
+import 'parts/ad_banner.dart';
 import 'package:intl/intl.dart';
 
 class MessageList extends StatefulWidget {
@@ -27,7 +28,10 @@ class _MessageListState extends State<MessageList> {
   Future<void> _loadUserProfileImage() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('profiles').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(user.uid)
+          .get();
       setState(() {
         userProfileImage = doc.data()?['profileImage'];
       });
@@ -78,7 +82,13 @@ class _MessageListState extends State<MessageList> {
             ),
           ],
         ),
-        bottomNavigationBar: const ButtomButton(),
+        bottomNavigationBar: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AdBanner(),
+            ButtomButton(),
+          ],
+        ),
       );
     }
 
@@ -130,12 +140,15 @@ class _MessageListState extends State<MessageList> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontWeight: (data['isRead'] ?? false) ? FontWeight.normal : FontWeight.bold,
+                    fontWeight: (data['isRead'] ?? false)
+                        ? FontWeight.normal
+                        : FontWeight.bold,
                   ),
                 ),
                 subtitle: Text('From: ${data['senderName'] ?? 'Unknown'}'),
                 trailing: Text(
-                  DateFormat('MM月dd日 HH:mm').format((data['timestamp'] as Timestamp).toDate()),
+                  DateFormat('MM月dd日 HH:mm')
+                      .format((data['timestamp'] as Timestamp).toDate()),
                 ),
                 onTap: () {
                   // メッセージを既読にする
@@ -160,7 +173,8 @@ class _MessageListState extends State<MessageList> {
                                     senderName: data['recipientName'],
                                     recipientId: data['senderId'],
                                     recipientName: data['senderName'],
-                                    senderImage: userProfileImage ?? '', // ログインユーザーの画像を送信
+                                    senderImage: userProfileImage ??
+                                        '', // ログインユーザーの画像を送信
                                   ),
                                 ),
                               );
@@ -183,7 +197,13 @@ class _MessageListState extends State<MessageList> {
           );
         },
       ),
-      bottomNavigationBar: const ButtomButton(),
+      bottomNavigationBar: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AdBanner(),
+          ButtomButton(),
+        ],
+      ),
     );
   }
 }

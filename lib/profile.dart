@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'parts/ad_banner.dart';
 import 'parts/app_drawer.dart';
 import 'parts/buttom_button.dart';
 import 'login_prompt.dart';
@@ -86,7 +87,10 @@ class ProfileState extends State<Profile> {
       'profileImage': imageUrl,
     };
 
-    await FirebaseFirestore.instance.collection('profiles').doc(uid).set(profileData);
+    await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(uid)
+        .set(profileData);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('プロフィールが保存されました')),
@@ -107,10 +111,13 @@ class ProfileState extends State<Profile> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final uid = user.uid;
-      final doc = await FirebaseFirestore.instance.collection('profiles').doc(uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(uid)
+          .get();
       if (doc.exists) {
         setState(() {
-          _isEditing = true; // データが存在するため、編集モードに設定
+          _isEditing = true; // データが存在するため、編集モード��設定
         });
         final data = doc.data();
         _nameController.text = data?['name'] ?? '';
@@ -177,6 +184,7 @@ class ProfileState extends State<Profile> {
               TextField(
                 controller: _experienceController,
                 decoration: const InputDecoration(labelText: '実績・経験'),
+                maxLines: null, // 長い文を入力できるようにする
               ),
               const SizedBox(height: 20),
               _profileImage == null
@@ -188,14 +196,16 @@ class ProfileState extends State<Profile> {
                               width: 120,
                               height: 120,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_circle, size: 120),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.account_circle, size: 120),
                             )
                           : Image.file(
                               File(_profileImage!.path),
                               width: 120,
                               height: 120,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_circle, size: 120),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.account_circle, size: 120),
                             ),
                     ),
               const SizedBox(height: 8),
@@ -211,7 +221,13 @@ class ProfileState extends State<Profile> {
             ],
           ),
         ),
-        bottomNavigationBar: const ButtomButton(),
+        bottomNavigationBar: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AdBanner(),
+            ButtomButton(),
+          ],
+        ),
       );
     }
   }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
+import 'parts/ad_banner.dart';
 import 'message.dart';
 
 class ProfileDetail extends StatelessWidget {
@@ -163,7 +164,13 @@ class ProfileDetail extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: const ButtomButton(),
+      bottomNavigationBar: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AdBanner(),
+          ButtomButton(),
+        ],
+      ),
     );
   }
 }
