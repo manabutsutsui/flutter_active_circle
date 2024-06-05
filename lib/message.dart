@@ -73,6 +73,7 @@ class MessageScreenState extends State<MessageScreen> {
         ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Text(

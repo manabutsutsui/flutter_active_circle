@@ -92,6 +92,16 @@ class ProfileState extends State<Profile> {
         .doc(uid)
         .set(profileData);
 
+    // メッセージコレクションのsenderImageフィールドを更新
+    final messages = await FirebaseFirestore.instance
+        .collection('messages')
+        .where('senderId', isEqualTo: uid)
+        .get();
+
+    for (var doc in messages.docs) {
+      await doc.reference.update({'senderImage': imageUrl});
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('プロフィールが保存されました')),
     );
@@ -166,7 +176,7 @@ class ProfileState extends State<Profile> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const Text('あなたのプロフィールを設定してください',
+              const Text('プロフィールを設定してください',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
                 controller: _nameController,
