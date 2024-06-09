@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/ad_banner.dart';
 import 'parts/buttom_button.dart';
+import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
 
 class MessageScreen extends StatefulWidget {
   final String recipientId;
@@ -23,6 +24,16 @@ class MessageScreenState extends State<MessageScreen> {
 
   void _sendMessage() async {
     if (_controller.text.isNotEmpty) {
+      final containsProhibited = await containsProhibitedContent(_controller.text);
+      if (containsProhibited) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
+          );
+        }
+        return;
+      }
+
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userProfile = await FirebaseFirestore.instance

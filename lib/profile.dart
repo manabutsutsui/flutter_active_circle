@@ -9,6 +9,7 @@ import 'parts/ad_banner.dart';
 import 'parts/app_drawer.dart';
 import 'parts/buttom_button.dart';
 import 'login_prompt.dart';
+import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -64,6 +65,21 @@ class ProfileState extends State<Profile> {
                 fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
           ),
         ),
+      );
+      return;
+    }
+
+    // フィルタリングを追加
+    final name = _nameController.text;
+    final sports = _sportsController.text;
+    final experience = _experienceController.text;
+
+    if (await containsProhibitedContent(name) ||
+        await containsProhibitedContent(sports) ||
+        await containsProhibitedContent(experience)) {
+      if (!mounted) return; // mountedチェックを追加
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
       );
       return;
     }
@@ -140,7 +156,7 @@ class ProfileState extends State<Profile> {
         }
       } else {
         setState(() {
-          _isEditing = false; // データが存在しないため、新規作成モードに設定
+          _isEditing = false; // データが存在しないため、新規作成モ���ドに設定
         });
       }
     }

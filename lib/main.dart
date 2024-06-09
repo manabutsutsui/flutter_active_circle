@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'home.dart';
 import 'profile.dart';
@@ -8,17 +9,24 @@ import 'profile_list.dart';
 import 'profile_detail.dart';
 import 'message_list.dart';
 import 'firebase_options.dart';
+import 'terms_of_service.dart';
+import 'utils/config.dart'; // Configユーティリティをインポート
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  await Config.loadConfig(); // Configを読み込む
+  final prefs = await SharedPreferences.getInstance();
+  final acceptedTerms = prefs.getBool('acceptedTerms') ?? false;
+  runApp(MyApp(acceptedTerms: acceptedTerms));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool acceptedTerms;
+
+  const MyApp({super.key, required this.acceptedTerms});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +34,7 @@ class MyApp extends StatelessWidget {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => const SplashScreen(),
+          builder: (context, state) => acceptedTerms ? const SplashScreen() : const TermsOfServiceScreen(),
         ),
         GoRoute(
           path: '/home',
@@ -136,4 +144,3 @@ class SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 }
-

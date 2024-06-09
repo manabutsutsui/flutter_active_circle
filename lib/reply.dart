@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
 
 class ReplyScreen extends StatefulWidget {
   final String senderId;
@@ -27,6 +28,17 @@ class _ReplyScreenState extends State<ReplyScreen> {
   void _sendMessage() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && _controller.text.isNotEmpty) {
+      // フィルタリングを追加
+      final containsProhibited = await containsProhibitedContent(_controller.text);
+      if (containsProhibited) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
+          );
+        }
+        return;
+      }
+
       await FirebaseFirestore.instance.collection('messages').add({
         'senderId': widget.senderId,
         'senderName': widget.senderName,
