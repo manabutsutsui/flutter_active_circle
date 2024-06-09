@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
 import 'parts/app_drawer.dart';
@@ -66,7 +67,15 @@ class ProfileListState extends State<ProfileList> {
                     final profile = profiles[index];
                     return GestureDetector(
                       onTap: () {
-                        context.go('/profile_detail/${profile.id}');
+                        if (FirebaseAuth.instance.currentUser == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('プロフィールの詳細を確認するには、ログインが必要です。'),
+                            ),
+                          );
+                        } else {
+                          context.go('/profile_detail/${profile.id}');
+                        }
                       },
                       child: Card(
                         elevation: 0, // 影を取り除く

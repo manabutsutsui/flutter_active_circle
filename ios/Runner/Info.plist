@@ -29,9 +29,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.tsutsunoido.activecircle.service</string>
 				<string>com.googleusercontent.apps.909258711043-bp83na4sda8llnh3u3quctrbhn2uu09t</string>
-				<string>com.googleusercontent.apps.909258711043-o850ghcc9f93rtjlv14gen9qj1tfjo22</string>
 			</array>
 		</dict>
 	</array>
@@ -64,6 +62,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>GIDClientID</key>
+	<string>909258711043-bp83na4sda8llnh3u3quctrbhn2uu09t.apps.googleusercontent.com</string>
 	<key>GIDSignIn</key>
 	<dict>
 		<key>ClientId</key>
