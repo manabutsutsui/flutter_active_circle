@@ -47,6 +47,13 @@ class AppDrawer extends StatelessWidget {
               context.go('/profile');
             },
           ),
+          ListTile(
+            title: const Text('ブロックリスト'),
+            leading: const Icon(Icons.block),
+            onTap: () {
+              context.go('/block_list');
+            },
+          ),
           if (_auth.currentUser != null) // ログインしている場合のみ表示
             ListTile(
               title: const Text(

@@ -11,6 +11,7 @@ import 'message_list.dart';
 import 'firebase_options.dart';
 import 'terms_of_service.dart';
 import 'utils/config.dart'; // Configユーティリティをインポート
+import 'block_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,10 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/message_list',
           builder: (context, state) => const MessageList(),
+        ),
+        GoRoute(
+          path: '/block_list',
+          builder: (context, state) => const BlockList(),
         ),
       ],
     );

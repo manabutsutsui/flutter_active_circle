@@ -180,7 +180,7 @@ class _MessageListState extends State<MessageList> {
                             : FontWeight.bold,
                       ),
                     ),
-                    subtitle: Text('From: ${data['senderName'] ?? 'Unknown'}'),
+                    subtitle: Text('名前: ${data['senderName'] ?? 'Unknown'}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
