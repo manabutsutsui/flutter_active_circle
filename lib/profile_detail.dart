@@ -60,7 +60,6 @@ class ProfileDetail extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
                         width: 300,
@@ -142,19 +141,72 @@ class ProfileDetail extends StatelessWidget {
                       const SizedBox(height: 15),
                       profileId == FirebaseAuth.instance.currentUser!.uid
                           ? const SizedBox()
-                          : ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MessageScreen(
-                                      recipientId: profileId,
-                                      recipientName: profile['name'],
-                                    ),
+                          : Column(
+                              children: [
+                                Center(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MessageScreen(
+                                            recipientId: profileId,
+                                            recipientName: profile['name'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text('${profile['name']}さんにメッセージを送信'),
                                   ),
-                                );
-                              },
-                              child: Text('${profile['name']}さんにメッセージを送信'),
+                                ),
+                                const SizedBox(height: 10),
+                                Center(
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      final TextEditingController reportController = TextEditingController();
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('報告内容を記入'),
+                                            content: TextField(
+                                              controller: reportController,
+                                              maxLines: 5,
+                                              decoration: const InputDecoration(
+                                                hintText: '報告内容を記入してください',
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('キャンセル'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  await FirebaseFirestore.instance.collection('reports').add({
+                                                    'profileId': profileId,
+                                                    'reportedBy': FirebaseAuth.instance.currentUser?.uid,
+                                                    'reportContent': reportController.text,
+                                                    'timestamp': FieldValue.serverTimestamp(),
+                                                  });
+                                                  Navigator.of(context).pop();
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('プロフィールを報告しました')),
+                                                  );
+                                                },
+                                                child: const Text('送信'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: const Text('このプロフィールを報告'),
+                                  ),
+                                ),
+                              ],
                             ),
                     ],
                   ),
