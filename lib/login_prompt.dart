@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'parts/buttom_button.dart';
 import 'parts/ad_banner.dart';
-import 'parts/sign_up_with_google.dart';
-import 'parts/sign_up_with_apple.dart';
+// import 'parts/sign_up_with_google.dart';
+// import 'parts/sign_up_with_apple.dart';
 
 class LoginPrompt extends StatelessWidget {
   const LoginPrompt({super.key});
@@ -40,9 +40,9 @@ class LoginPrompt extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('プロフィールを作成するには、ログインが必要です。'),
-                  SignUpWithGoogle(),
-                  SignUpWithApple(),
+                  // Text('プロフィールを作成するには、ログインが必要です。'),
+                  // SignUpWithGoogle(),
+                  // SignUpWithApple(),
                 ],
               ),
             ),

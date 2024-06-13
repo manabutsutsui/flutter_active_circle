@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import 'parts/sign_up_with_google.dart';
-import 'parts/sign_up_with_apple.dart';
+// import 'parts/sign_up_with_google.dart';
+// import 'parts/sign_up_with_apple.dart';
 import 'parts/buttom_button.dart';
 import 'reply.dart';
 import 'parts/ad_banner.dart';
@@ -84,9 +84,9 @@ class _MessageListState extends State<MessageList> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('ログインしてください'),
-                    SignUpWithGoogle(),
-                    SignUpWithApple(),
+                    // Text('ログインしてください'),
+                    // SignUpWithGoogle(),
+                    // SignUpWithApple(),
                   ],
                 ),
               ),

@@ -74,7 +74,7 @@ class ProfileDetail extends StatelessWidget {
                                     fontWeight: FontWeight.bold, fontSize: 24),
                               ),
                               TextSpan(
-                                text: profile['name'],
+                                text: profile['nickName'],
                                 style: const TextStyle(fontSize: 24),
                               ),
                             ],
@@ -151,12 +151,12 @@ class ProfileDetail extends StatelessWidget {
                                         MaterialPageRoute(
                                           builder: (context) => MessageScreen(
                                             recipientId: profileId,
-                                            recipientName: profile['name'],
+                                            recipientName: profile['nickName'],
                                           ),
                                         ),
                                       );
                                     },
-                                    child: Text('${profile['name']}さんにメッセージを送信'),
+                                    child: Text('${profile['nickName']}さんにメッセージを送信'),
                                   ),
                                 ),
                                 const SizedBox(height: 10),

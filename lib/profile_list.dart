@@ -94,7 +94,7 @@ class ProfileListState extends State<ProfileList> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                profile['name'],
+                                profile['nickName'],
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 20),
                                 overflow: TextOverflow.ellipsis,

@@ -20,7 +20,7 @@ class Profile extends StatefulWidget {
 }
 
 class ProfileState extends State<Profile> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nickNameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _sportsController = TextEditingController();
   final TextEditingController _experienceController = TextEditingController();
@@ -63,15 +63,14 @@ class ProfileState extends State<Profile> {
   }
 
   Future<void> _saveProfile() async {
-    if (_nameController.text.isEmpty ||
-        _ageController.text.isEmpty ||
+    if (_nickNameController.text.isEmpty ||
         _sportsController.text.isEmpty ||
         _experienceController.text.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'すべてのフィールドを入力してください',
+              'すべての必須フィールドを入力してください',
               style: TextStyle(
                   fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
             ),
@@ -82,11 +81,11 @@ class ProfileState extends State<Profile> {
     }
 
     // フィルタリングを追加
-    final name = _nameController.text;
+    final nickName = _nickNameController.text;
     final sports = _sportsController.text;
     final experience = _experienceController.text;
 
-    if (await containsProhibitedContent(name) ||
+    if (await containsProhibitedContent(nickName) ||
         await containsProhibitedContent(sports) ||
         await containsProhibitedContent(experience)) {
       if (mounted) {
@@ -109,8 +108,8 @@ class ProfileState extends State<Profile> {
 
     final profileData = {
       'uid': uid,
-      'name': _nameController.text,
-      'age': int.parse(_ageController.text),
+      'nickName': _nickNameController.text,
+      'age': _ageController.text.isNotEmpty ? int.parse(_ageController.text) : '非公開',
       'sports': _sportsController.text,
       'experience': _experienceController.text,
       'profileImage': imageUrl,
@@ -158,8 +157,8 @@ class ProfileState extends State<Profile> {
           _isEditing = true; // データが存在するため、編集モード設定
         });
         final data = doc.data();
-        _nameController.text = data?['name'] ?? '';
-        _ageController.text = data?['age'].toString() ?? '';
+        _nickNameController.text = data?['nickName'] ?? '';
+        _ageController.text = data?['age']?.toString() ?? '';
         _sportsController.text = data?['sports'] ?? '';
         _experienceController.text = data?['experience'] ?? '';
         _imageUrl = data?['profileImage'] ?? ''; // URLを取得
@@ -207,12 +206,12 @@ class ProfileState extends State<Profile> {
               const Text('プロフィールを設定してください',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: '名前'),
+                controller: _nickNameController,
+                decoration: const InputDecoration(labelText: 'ニックネーム'),
               ),
               TextField(
                 controller: _ageController,
-                decoration: const InputDecoration(labelText: '年齢'),
+                decoration: const InputDecoration(labelText: '年齢 (オプション)'),
                 keyboardType: TextInputType.number,
               ),
               TextField(

@@ -41,7 +41,7 @@ class MessageScreenState extends State<MessageScreen> {
             .doc(user.uid)
             .get();
 
-        final senderName = userProfile.data()?['name'] ?? 'Unknown';
+        final senderName = userProfile.data()?['nickName'] ?? 'Unknown';
         final senderImage = userProfile.data()?['profileImage'] ?? '';
 
         await FirebaseFirestore.instance.collection('messages').add({

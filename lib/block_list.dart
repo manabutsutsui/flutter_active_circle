@@ -97,7 +97,7 @@ class _BlockListState extends State<BlockList> {
                     leading: CircleAvatar(
                       backgroundImage: NetworkImage(userData['profileImage']),
                     ),
-                    title: Text(userData['name']),
+                    title: Text(userData['nickName']),
                     trailing: IconButton(
                       icon: const Icon(Icons.block),
                       onPressed: () async {
