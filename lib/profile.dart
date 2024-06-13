@@ -10,6 +10,7 @@ import 'parts/app_drawer.dart';
 import 'parts/buttom_button.dart';
 import 'login_prompt.dart';
 import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
+import 'package:permission_handler/permission_handler.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -30,12 +31,21 @@ class ProfileState extends State<Profile> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _profileImage = image;
-        _imageUrl = null; // 新しい画像を選択したので、_imageUrlをクリアする
-      });
+    final status = await Permission.photos.request();
+    if (status.isGranted) {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null && mounted) {
+        setState(() {
+          _profileImage = image;
+          _imageUrl = null;
+        });
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('写真ライブラリへのアクセスが拒否されました。')),
+        );
+      }
     }
   }
 
@@ -57,15 +67,17 @@ class ProfileState extends State<Profile> {
         _ageController.text.isEmpty ||
         _sportsController.text.isEmpty ||
         _experienceController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'すべてのフィールドを入力してください',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'すべてのフィールドを入力してください',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+            ),
           ),
-        ),
-      );
+        );
+      }
       return;
     }
 
@@ -77,10 +89,11 @@ class ProfileState extends State<Profile> {
     if (await containsProhibitedContent(name) ||
         await containsProhibitedContent(sports) ||
         await containsProhibitedContent(experience)) {
-      if (!mounted) return; // mountedチェックを追加
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
+        );
+      }
       return;
     }
 
@@ -118,11 +131,10 @@ class ProfileState extends State<Profile> {
       await doc.reference.update({'senderImage': imageUrl});
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('プロフィールが保存されました')),
-    );
-
     if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('プロフィールが保存されました')),
+      );
       context.go('/profile_list');
     }
   }
@@ -141,7 +153,7 @@ class ProfileState extends State<Profile> {
           .collection('profiles')
           .doc(uid)
           .get();
-      if (doc.exists) {
+      if (doc.exists && mounted) {
         setState(() {
           _isEditing = true; // データが存在するため、編集モード設定
         });
@@ -154,9 +166,9 @@ class ProfileState extends State<Profile> {
         if (_imageUrl!.isNotEmpty) {
           _profileImage = XFile(_imageUrl!); // XFileにURLを設定
         }
-      } else {
+      } else if (mounted) {
         setState(() {
-          _isEditing = false; // データが存在しないため、新規作成モ���ドに設定
+          _isEditing = false; // データが存在しないため、新規作成モードに設定
         });
       }
     }

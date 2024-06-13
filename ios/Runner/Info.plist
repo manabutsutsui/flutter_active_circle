@@ -40,7 +40,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>カメラへのアクセスを許可してください。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>写真ライブラリへのアクセスを許可してください。</string>
+	<string>アプリでプロフィール写真を設定するために、写真ライブラリへのアクセスが必要です。選択した写真はプロフィール画像として使用されます。</string>
 	<key>SignInWithApple</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
