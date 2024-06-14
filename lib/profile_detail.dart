@@ -11,6 +11,23 @@ class ProfileDetail extends StatelessWidget {
 
   const ProfileDetail({super.key, required this.profileId});
 
+  Future<void> blockUser(BuildContext context, String blockedUserId) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await FirebaseFirestore.instance.collection('blocks').add({
+        'blockedBy': currentUser.uid,
+        'blockedUser': blockedUserId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ユーザーをブロックしました')),
+      );
+      if (context.mounted) {
+        context.go('/profile_list');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -204,6 +221,39 @@ class ProfileDetail extends StatelessWidget {
                                       );
                                     },
                                     child: const Text('このプロフィールを報告'),
+                                  ),
+                                ),
+                                Center(
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: const Text('確認'),
+                                            content: const Text('このユーザーをブロックしますか？'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(false);
+                                                },
+                                                child: const Text('キャンセル'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop(true);
+                                                },
+                                                child: const Text('ブロック'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                      if (confirm == true) {
+                                        await blockUser(context, profileId);
+                                      }
+                                    },
+                                    child: const Text('このユーザーをブロック'),
                                   ),
                                 ),
                               ],
