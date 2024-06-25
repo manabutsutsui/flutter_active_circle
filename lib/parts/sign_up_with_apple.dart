@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:go_router/go_router.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:sign_in_button/sign_in_button.dart';
+import '../app.dart';
 
 class SignUpWithApple extends StatefulWidget {
   const SignUpWithApple({super.key});
@@ -37,7 +37,11 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Appleアカウントでログインが完了しました。')),
             );
-            context.go('/profile');
+            // 'プロフィール'に遷移
+            Navigator.of(context).pushReplacementNamed('/profile');
+            // 'プロフィール'画面に遷移した後、_selectedIndexを更新
+            final myStatefulWidgetState = context.findAncestorStateOfType<MyStatefulWidgetState>();
+            myStatefulWidgetState?.navigateToPage(3); // 'プロフィール'のインデックスを設定
           }
         } catch (e) {
           if (e is SignInWithAppleAuthorizationException) {
@@ -72,4 +76,3 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
     );
   }
 }
-

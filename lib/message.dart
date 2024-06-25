@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'parts/ad_banner.dart';
-import 'parts/buttom_button.dart';
 import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
 
 class MessageScreen extends StatefulWidget {
@@ -107,13 +105,6 @@ class MessageScreenState extends State<MessageScreen> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }

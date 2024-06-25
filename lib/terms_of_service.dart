@@ -9,7 +9,7 @@ class TermsOfServiceScreen extends StatelessWidget {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('acceptedTerms', true);
     if (context.mounted) {
-      context.go('/');
+      context.go('/app');
     }
   }
 
@@ -17,14 +17,13 @@ class TermsOfServiceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ActiveCircle',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-              fontFamily: 'Pacifico',
-            ))
-      ),
+          title: const Text('ActiveCircle',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                fontFamily: 'Pacifico',
+              ))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

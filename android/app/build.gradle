@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '2.0.0' // ここでkotlin_versionを定義します
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:4.2.2'
+        // 他の依存関係
+    }
+}
+
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
@@ -26,6 +39,8 @@ if (flutterVersionName == null) {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.google-services' 
 
 android {
@@ -73,4 +88,5 @@ flutter {
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:31.2.0')  // 最新バージョンを使用してください
     implementation 'com.google.firebase:firebase-analytics'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }

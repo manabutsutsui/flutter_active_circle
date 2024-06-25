@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:go_router/go_router.dart';
-// import 'parts/sign_up_with_google.dart';
-// import 'parts/sign_up_with_apple.dart';
-import 'parts/buttom_button.dart';
 import 'reply.dart';
-import 'parts/ad_banner.dart';
 import 'package:intl/intl.dart';
+import 'parts/ad_banner.dart';
+import 'parts/app_drawer.dart';
+import 'parts/sign_up_with_google.dart';
+import 'parts/sign_up_with_apple.dart';
 
 class MessageList extends StatefulWidget {
   const MessageList({super.key});
@@ -63,15 +62,21 @@ class _MessageListState extends State<MessageList> {
                 color: Colors.blue,
                 fontFamily: 'Pacifico',
               )),
-          leading: IconButton(
-            onPressed: () {
-              context.go('/home');
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
             },
-            icon: const Icon(Icons.arrow_back),
           ),
         ),
+        drawer: AppDrawer(),
         body: const Column(
           children: [
+            AdBanner(),
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Center(
@@ -84,20 +89,13 @@ class _MessageListState extends State<MessageList> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Text('ログインしてください'),
-                    // SignUpWithGoogle(),
-                    // SignUpWithApple(),
+                    Text('ログインしてください'),
+                    SignUpWithGoogle(),
+                    SignUpWithApple(),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
-        bottomNavigationBar: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AdBanner(),
-            ButtomButton(),
           ],
         ),
       );
@@ -105,20 +103,25 @@ class _MessageListState extends State<MessageList> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ActiveCircle',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-              fontFamily: 'Pacifico',
-            )),
-        leading: IconButton(
-          onPressed: () {
-            context.go('/home');
-          },
-          icon: const Icon(Icons.arrow_back),
-        ),
+          title: const Text('ActiveCircle',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                fontFamily: 'Pacifico',
+              )),
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ),
       ),
+      drawer: AppDrawer(),
       body: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance
             .collection('blocks')
@@ -185,8 +188,8 @@ class _MessageListState extends State<MessageList> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          DateFormat('MM月dd日 HH:mm')
-                              .format((data['timestamp'] as Timestamp).toDate()),
+                          DateFormat('MM月dd日 HH:mm').format(
+                              (data['timestamp'] as Timestamp).toDate()),
                         ),
                         IconButton(
                           icon: const Icon(Icons.block),
@@ -251,8 +254,7 @@ class _MessageListState extends State<MessageList> {
                                             senderName: data['recipientName'],
                                             recipientId: data['senderId'],
                                             recipientName: data['senderName'],
-                                            senderImage: userProfileImage ??
-                                                '', // ログインユーザーの画像を送信
+                                            senderImage: userProfileImage ?? '',
                                           ),
                                         ),
                                       );
@@ -278,13 +280,6 @@ class _MessageListState extends State<MessageList> {
             },
           );
         },
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }

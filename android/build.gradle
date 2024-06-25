@@ -1,3 +1,16 @@
+buildscript {
+    ext.kotlin_version = '2.0.0' // 安定したバージョンに変更
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:4.2.2'
+        // 他の依存関係
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -15,10 +28,4 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
-}
-
-buildscript {
-    dependencies {
-        classpath 'com.google.gms:google-services:4.3.14'  // 最新バージョンを使用してください
-    }
 }

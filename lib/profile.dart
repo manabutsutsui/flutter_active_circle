@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/ad_banner.dart';
-import 'parts/app_drawer.dart';
-import 'parts/buttom_button.dart';
-import 'login_prompt.dart';
 import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
 import 'package:permission_handler/permission_handler.dart';
+import 'parts/app_drawer.dart';
+import 'parts/sign_up_with_google.dart';
+import 'parts/sign_up_with_apple.dart';
+import 'app.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -90,7 +91,11 @@ class ProfileState extends State<Profile> {
         await containsProhibitedContent(experience)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('不適切な内容が含まれています。', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),)),
+          const SnackBar(
+              content: Text(
+            '不適切な内容が含まれています。',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          )),
         );
       }
       return;
@@ -109,7 +114,9 @@ class ProfileState extends State<Profile> {
     final profileData = {
       'uid': uid,
       'nickName': _nickNameController.text,
-      'age': _ageController.text.isNotEmpty ? int.parse(_ageController.text) : '非公開',
+      'age': _ageController.text.isNotEmpty
+          ? int.parse(_ageController.text)
+          : '非公開',
       'sports': _sportsController.text,
       'experience': _experienceController.text,
       'profileImage': imageUrl,
@@ -134,7 +141,8 @@ class ProfileState extends State<Profile> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('プロフィールが保存されました')),
       );
-      context.go('/profile_list');
+      final state = context.findAncestorStateOfType<MyStatefulWidgetState>();
+      state?.navigateToPage(1);
     }
   }
 
@@ -176,7 +184,52 @@ class ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     if (FirebaseAuth.instance.currentUser == null) {
-      return const LoginPrompt();
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('ActiveCircle',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                fontFamily: 'Pacifico',
+              )),
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ),
+        ),
+        drawer: AppDrawer(),
+        body: const Column(
+          children: [
+            AdBanner(),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                  child: Text('あなたのプロフィールを作成してください',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold))),
+            ),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('プロフィールを作成するには、ログインが必要です。'),
+                    SignUpWithGoogle(),
+                    SignUpWithApple(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -199,12 +252,16 @@ class ProfileState extends State<Profile> {
           ),
         ),
         drawer: AppDrawer(),
-        body: SingleChildScrollView( // SingleChildScrollViewでラップする
-          padding: const EdgeInsets.all(20.0),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             children: [
-              const Text('プロフィールを設定してください',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const AdBanner(),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('プロフィールを設定してください',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
               TextField(
                 controller: _nickNameController,
                 decoration: const InputDecoration(labelText: 'ニックネーム'),
@@ -221,7 +278,7 @@ class ProfileState extends State<Profile> {
               TextField(
                 controller: _experienceController,
                 decoration: const InputDecoration(labelText: '実績・経験'),
-                maxLines: null, // 長い文を入力できるようにする
+                maxLines: null,
               ),
               const SizedBox(height: 20),
               _profileImage == null
@@ -253,17 +310,10 @@ class ProfileState extends State<Profile> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveProfile,
-                child: Text(_isEditing ? '変更を保存' : '作成'), // ボタンのテキストを動的に変更
+                child: Text(_isEditing ? '変更を保存' : '作成'),
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AdBanner(),
-            ButtomButton(),
-          ],
         ),
       );
     }

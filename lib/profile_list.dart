@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:go_router/go_router.dart';
-import 'parts/buttom_button.dart';
-import 'parts/app_drawer.dart';
 import 'parts/ad_banner.dart';
+import 'parts/app_drawer.dart';
 
 class ProfileList extends StatefulWidget {
   const ProfileList({super.key});
@@ -23,7 +21,9 @@ class ProfileListState extends State<ProfileList> {
         .collection('blocks')
         .where('blockedBy', isEqualTo: currentUser.uid)
         .get();
-    return querySnapshot.docs.map((doc) => doc['blockedUser'] as String).toList();
+    return querySnapshot.docs
+        .map((doc) => doc['blockedUser'] as String)
+        .toList();
   }
 
   @override
@@ -62,7 +62,8 @@ class ProfileListState extends State<ProfileList> {
           final blockedUsers = blockedSnapshot.data ?? [];
 
           return StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('profiles').snapshots(),
+            stream:
+                FirebaseFirestore.instance.collection('profiles').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -71,10 +72,13 @@ class ProfileListState extends State<ProfileList> {
                 return const Center(child: Text('プロフィールがありません'));
               }
 
-              final profiles = snapshot.data!.docs.where((doc) => !blockedUsers.contains(doc.id)).toList();
+              final profiles = snapshot.data!.docs
+                  .where((doc) => !blockedUsers.contains(doc.id))
+                  .toList();
 
               return Column(
                 children: [
+                  const AdBanner(),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
                     child: Text('プロフィール一覧',
@@ -82,7 +86,8 @@ class ProfileListState extends State<ProfileList> {
                   ),
                   Expanded(
                     child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2, // 2列に設定
                         childAspectRatio: 0.75, // カードの縦横比を調整
                       ),
@@ -98,7 +103,11 @@ class ProfileListState extends State<ProfileList> {
                                 ),
                               );
                             } else {
-                              context.go('/profile_detail/${profile.id}');
+                              Navigator.pushNamed(
+                                context,
+                                '/profile_detail',
+                                arguments: profile.id,
+                              );
                             }
                           },
                           child: Card(
@@ -120,7 +129,8 @@ class ProfileListState extends State<ProfileList> {
                                   Text(
                                     profile['nickName'],
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.bold, fontSize: 20),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 5),
@@ -142,13 +152,6 @@ class ProfileListState extends State<ProfileList> {
             },
           );
         },
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:go_router/go_router.dart';
-import 'parts/buttom_button.dart';
-import 'parts/ad_banner.dart';
 import 'message.dart';
 
 class ProfileDetail extends StatelessWidget {
@@ -23,7 +20,7 @@ class ProfileDetail extends StatelessWidget {
         const SnackBar(content: Text('ユーザーをブロックしました')),
       );
       if (context.mounted) {
-        context.go('/profile_list');
+        Navigator.pop(context);
       }
     }
   }
@@ -41,7 +38,7 @@ class ProfileDetail extends StatelessWidget {
             )),
         leading: IconButton(
           onPressed: () {
-            context.go('/profile_list');
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -173,88 +170,113 @@ class ProfileDetail extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    child: Text('${profile['nickName']}さんにメッセージを送信'),
+                                    child: Text(
+                                        '${profile['nickName']}さんにメッセージを送信'),
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                Center(
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      final TextEditingController reportController = TextEditingController();
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text('報告内容を記入'),
-                                            content: TextField(
-                                              controller: reportController,
-                                              maxLines: 5,
-                                              decoration: const InputDecoration(
-                                                hintText: '報告内容を記入してください',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.report),
+                                      onPressed: () async {
+                                        final TextEditingController
+                                            reportController =
+                                            TextEditingController();
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text('報告内容を記入'),
+                                              content: TextField(
+                                                controller: reportController,
+                                                maxLines: 5,
+                                                decoration:
+                                                    const InputDecoration(
+                                                  hintText: '報告内容を記入してください',
+                                                ),
                                               ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: const Text('キャンセル'),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  await FirebaseFirestore.instance.collection('reports').add({
-                                                    'profileId': profileId,
-                                                    'reportedBy': FirebaseAuth.instance.currentUser?.uid,
-                                                    'reportContent': reportController.text,
-                                                    'timestamp': FieldValue.serverTimestamp(),
-                                                  });
-                                                  Navigator.of(context).pop();
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(content: Text('プロフィールを報告しました')),
-                                                  );
-                                                },
-                                                child: const Text('送信'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: const Text('このプロフィールを報告'),
-                                  ),
-                                ),
-                                Center(
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text('確認'),
-                                            content: const Text('このユーザーをブロックしますか？'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop(false);
-                                                },
-                                                child: const Text('キャンセル'),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop(true);
-                                                },
-                                                child: const Text('ブロック'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                      if (confirm == true) {
-                                        await blockUser(context, profileId);
-                                      }
-                                    },
-                                    child: const Text('このユーザーをブロック'),
-                                  ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop();
+                                                  },
+                                                  child: const Text('キャンセル'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection('reports')
+                                                        .add({
+                                                      'profileId': profileId,
+                                                      'reportedBy':
+                                                          FirebaseAuth
+                                                              .instance
+                                                              .currentUser
+                                                              ?.uid,
+                                                      'reportContent':
+                                                          reportController
+                                                              .text,
+                                                      'timestamp': FieldValue
+                                                          .serverTimestamp(),
+                                                    });
+                                                    Navigator.of(context)
+                                                        .pop();
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                          content: Text(
+                                                              'プロフィールを報告しました')),
+                                                    );
+                                                  },
+                                                  child: const Text('送信'),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.block),
+                                      onPressed: () async {
+                                        final confirm =
+                                            await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text('確認'),
+                                              content: const Text(
+                                                  'このユーザーをブロックしますか？'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop(false);
+                                                  },
+                                                  child: const Text('キャンセル'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context)
+                                                        .pop(true);
+                                                  },
+                                                  child: const Text('ブロック'),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (confirm == true) {
+                                          await blockUser(context, profileId);
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -265,13 +287,6 @@ class ProfileDetail extends StatelessWidget {
             ),
           );
         },
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }

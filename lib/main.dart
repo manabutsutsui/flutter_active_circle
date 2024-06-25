@@ -3,15 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'home.dart';
-import 'profile.dart';
-import 'profile_list.dart';
-import 'profile_detail.dart';
-import 'message_list.dart';
 import 'firebase_options.dart';
 import 'terms_of_service.dart';
 import 'utils/config.dart'; // Configユーティリティをインポート
 import 'block_list.dart';
+import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,24 +34,8 @@ class MyApp extends StatelessWidget {
           builder: (context, state) => acceptedTerms ? const SplashScreen() : const TermsOfServiceScreen(),
         ),
         GoRoute(
-          path: '/home',
-          builder: (context, state) => const HomeScreen(),
-        ),
-        GoRoute(
-          path: '/profile',
-          builder: (context, state) => const Profile(),
-        ),
-        GoRoute(
-          path: '/profile_list',
-          builder: (context, state) => const ProfileList(),
-        ),
-        GoRoute(
-          path: '/profile_detail/:profileId',
-          builder: (context, state) => ProfileDetail(profileId: state.pathParameters['profileId']!),
-        ),
-        GoRoute(
-          path: '/message_list',
-          builder: (context, state) => const MessageList(),
+          path: '/app',
+          builder: (context, state) => const MyStatefulWidget(),
         ),
         GoRoute(
           path: '/block_list',
@@ -99,7 +79,7 @@ class SplashScreenState extends State<SplashScreen>
 
     _controller.forward().then((_) {
       Timer(const Duration(seconds: 2), () {
-        context.go('/home');
+        context.go('/app');
       });
     });
   }
@@ -128,7 +108,7 @@ class SplashScreenState extends State<SplashScreen>
                   ),
                   SizedBox(height: 16),
                   Text(
-                    'スポーツ好きと繋がりましょう！',
+                    'スポーツ好きな人と繋がりましょう！',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

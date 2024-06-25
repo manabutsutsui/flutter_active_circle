@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'parts/ad_banner.dart';
-import 'parts/buttom_button.dart';
+import 'package:go_router/go_router.dart';
 
 class BlockList extends StatefulWidget {
   const BlockList({super.key});
@@ -31,19 +30,24 @@ class _BlockListState extends State<BlockList> {
         body: const Center(
           child: Text('ログインしてください'),
         ),
-        bottomNavigationBar: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AdBanner(),
-            ButtomButton(),
-          ],
-        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ブロックリスト'),
+        title: const Text('ActiveCircle',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+              fontFamily: 'Pacifico',
+            )),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/app');
+          },
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -136,13 +140,6 @@ class _BlockListState extends State<BlockList> {
             },
           );
         },
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }

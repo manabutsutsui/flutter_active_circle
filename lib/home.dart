@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'parts/app_drawer.dart';
 import 'parts/ad_banner.dart';
-import 'parts/buttom_button.dart';
 import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
+import 'parts/app_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,23 +12,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  final List<String> _images = [
-    'assets/soccer.jpg',
-    'assets/basketball.jpg',
-    'assets/tennis.jpg',
-    'assets/volleyball.jpg',
-  ];
-
-  int _currentIndex = 0;
-  final PageController _pageController = PageController();
+  with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _startSlideshow();
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -42,55 +30,10 @@ class HomeScreenState extends State<HomeScreen>
     _animationController.forward();
   }
 
-  void _startSlideshow() {
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        int nextIndex = _currentIndex + 1;
-        if (nextIndex >= _images.length) {
-          _pageController.jumpToPage(0);
-          nextIndex = 0;
-        } else {
-          _pageController.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-        setState(() {
-          _currentIndex = nextIndex;
-        });
-        _startSlideshow();
-      }
-    });
-  }
-
   @override
   void dispose() {
-    _pageController.dispose();
     _animationController.dispose();
     super.dispose();
-  }
-
-  Widget buildPageView() {
-    return SizedBox(
-      height: 250,
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: _images.length,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          return Image.asset(
-            _images[index],
-            width: double.infinity,
-            fit: BoxFit.cover,
-          );
-        },
-      ),
-    );
   }
 
   Widget buildFadeTransition() {
@@ -121,19 +64,11 @@ class HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget buildButtons() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+  Widget buildButtons(BuildContext context) {
+    return const Column(
       children: [
-        const SignUpWithGoogle(),
-        const SignUpWithApple(),
-        const SizedBox(height: 10),
-        TextButton(
-          onPressed: () {
-            context.go('/profile_list');
-          },
-          child: const Text('後で'),
-        ),
+        SignUpWithGoogle(),
+        SignUpWithApple(),
       ],
     );
   }
@@ -164,20 +99,13 @@ class HomeScreenState extends State<HomeScreen>
       body: SingleChildScrollView(
         child: Column(
           children: [
-            buildPageView(),
-            const SizedBox(height: 40),
+            const AdBanner(),
+            const SizedBox(height: 20),
             buildFadeTransition(),
-            const SizedBox(height: 40),
-            buildButtons(),
+            const SizedBox(height: 20),
+            buildButtons(context),
           ],
         ),
-      ),
-      bottomNavigationBar: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AdBanner(),
-          ButtomButton(),
-        ],
       ),
     );
   }
