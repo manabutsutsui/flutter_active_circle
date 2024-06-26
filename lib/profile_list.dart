@@ -111,7 +111,6 @@ class ProfileListState extends State<ProfileList> {
                             }
                           },
                           child: Card(
-                            elevation: 0, // 影を取り除く
                             child: Padding(
                               padding: const EdgeInsets.all(10.0),
                               child: Column(

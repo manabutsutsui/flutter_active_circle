@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,21 +25,30 @@ class ProfileState extends State<Profile> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _sportsController = TextEditingController();
   final TextEditingController _experienceController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
   XFile? _profileImage;
-  String? _imageUrl; // Firestoreから取得した画像のURLを保持する
-  bool _isEditing = false; // プロフィールが編集中かどうかを追跡するフラグ
+  String? _imageUrl;
+  bool _isEditing = false;
 
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
     final status = await Permission.photos.request();
     if (status.isGranted) {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null && mounted) {
-        setState(() {
-          _profileImage = image;
-          _imageUrl = null;
-        });
+      try {
+        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        if (image != null && mounted) {
+          setState(() {
+            _profileImage = image;
+            _imageUrl = null;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('画像の読み込みに失敗しました')),
+          );
+        }
       }
     } else {
       if (mounted) {
@@ -66,7 +75,8 @@ class ProfileState extends State<Profile> {
   Future<void> _saveProfile() async {
     if (_nickNameController.text.isEmpty ||
         _sportsController.text.isEmpty ||
-        _experienceController.text.isEmpty) {
+        _experienceController.text.isEmpty ||
+        _bioController.text.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -85,10 +95,12 @@ class ProfileState extends State<Profile> {
     final nickName = _nickNameController.text;
     final sports = _sportsController.text;
     final experience = _experienceController.text;
+    final bio = _bioController.text;
 
     if (await containsProhibitedContent(nickName) ||
         await containsProhibitedContent(sports) ||
-        await containsProhibitedContent(experience)) {
+        await containsProhibitedContent(experience) ||
+        await containsProhibitedContent(bio)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -114,11 +126,10 @@ class ProfileState extends State<Profile> {
     final profileData = {
       'uid': uid,
       'nickName': _nickNameController.text,
-      'age': _ageController.text.isNotEmpty
-          ? int.parse(_ageController.text)
-          : '非公開',
+      'age': _ageController.text,
       'sports': _sportsController.text,
       'experience': _experienceController.text,
+      'bio': _bioController.text,
       'profileImage': imageUrl,
     };
 
@@ -162,14 +173,15 @@ class ProfileState extends State<Profile> {
           .get();
       if (doc.exists && mounted) {
         setState(() {
-          _isEditing = true; // データが存在するため、編集モード設定
+          _isEditing = true;
         });
         final data = doc.data();
         _nickNameController.text = data?['nickName'] ?? '';
-        _ageController.text = data?['age']?.toString() ?? '';
+        _ageController.text = data?['age'] ?? '';
         _sportsController.text = data?['sports'] ?? '';
         _experienceController.text = data?['experience'] ?? '';
-        _imageUrl = data?['profileImage'] ?? ''; // URLを取得
+        _bioController.text = data?['bio'] ?? '';
+        _imageUrl = data?['profileImage'] ?? '';
         if (_imageUrl!.isNotEmpty) {
           _profileImage = XFile(_imageUrl!); // XFileにURLを設定
         }
@@ -179,6 +191,43 @@ class ProfileState extends State<Profile> {
         });
       }
     }
+  }
+
+  void _showAgePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 250,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: CupertinoPicker(
+                  itemExtent: 32.0,
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      _ageController.text = index == 0 ? '非公開' : '$index歳';
+                    });
+                  },
+                  children: List<Widget>.generate(101, (int index) {
+                    return Center(
+                      child: Text(index == 0 ? '非公開' : '$index歳'),
+                    );
+                  }),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('選択'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -262,6 +311,32 @@ class ProfileState extends State<Profile> {
                 child: Text('プロフィールを設定してください',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ),
+              _profileImage == null
+                  ? const Icon(Icons.account_circle, size: 150)
+                  : ClipOval(
+                      child: _imageUrl != null && _imageUrl!.isNotEmpty
+                          ? Image.network(
+                              _imageUrl!,
+                              width: 150,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.account_circle, size: 150),
+                            )
+                          : Image.file(
+                              File(_profileImage!.path),
+                              width: 150,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.account_circle, size: 150),
+                            ),
+                    ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text('プロフィール写真を選択'),
+              ),
               TextField(
                 controller: _nickNameController,
                 decoration: const InputDecoration(labelText: 'ニックネーム'),
@@ -269,7 +344,8 @@ class ProfileState extends State<Profile> {
               TextField(
                 controller: _ageController,
                 decoration: const InputDecoration(labelText: '年齢 (オプション)'),
-                keyboardType: TextInputType.number,
+                readOnly: true,
+                onTap: _showAgePicker,
               ),
               TextField(
                 controller: _sportsController,
@@ -280,32 +356,10 @@ class ProfileState extends State<Profile> {
                 decoration: const InputDecoration(labelText: '実績・経験'),
                 maxLines: null,
               ),
-              const SizedBox(height: 20),
-              _profileImage == null
-                  ? const Text('プロフィール写真を選択してください')
-                  : ClipOval(
-                      child: _imageUrl != null && _imageUrl!.isNotEmpty
-                          ? Image.network(
-                              _imageUrl!,
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.account_circle, size: 120),
-                            )
-                          : Image.file(
-                              File(_profileImage!.path),
-                              width: 120,
-                              height: 120,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.account_circle, size: 120),
-                            ),
-                    ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: _pickImage,
-                child: const Text('プロフィール写真を選択'),
+              TextField(
+                controller: _bioController,
+                decoration: const InputDecoration(labelText: '自己紹介'),
+                maxLines: null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(

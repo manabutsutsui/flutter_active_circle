@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'firebase_options.dart';
 import 'terms_of_service.dart';
-import 'utils/config.dart'; // Configユーティリティをインポート
+import 'utils/config.dart';
 import 'block_list.dart';
 import 'app.dart';
 
@@ -14,7 +14,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await Config.loadConfig(); // Configを読み込む
+  await Config.loadConfig();
   final prefs = await SharedPreferences.getInstance();
   final acceptedTerms = prefs.getBool('acceptedTerms') ?? false;
   runApp(MyApp(acceptedTerms: acceptedTerms));
@@ -108,7 +108,7 @@ class SplashScreenState extends State<SplashScreen>
                   ),
                   SizedBox(height: 16),
                   Text(
-                    'スポーツ好きな人と繋がりましょう！',
+                    'スポーツ好きと繋がろう！',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

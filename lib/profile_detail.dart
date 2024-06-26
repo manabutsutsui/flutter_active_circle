@@ -152,6 +152,25 @@ class ProfileDetail extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: 300,
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                            children: <TextSpan>[
+                              const TextSpan(
+                                text: '自己紹介: ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text: profile['bio'],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 15),
                       profileId == FirebaseAuth.instance.currentUser!.uid
                           ? const SizedBox()
@@ -179,7 +198,7 @@ class ProfileDetail extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(Icons.report),
+                                      icon: const Icon(Icons.report, size: 30),
                                       onPressed: () async {
                                         final TextEditingController
                                             reportController =
@@ -242,7 +261,7 @@ class ProfileDetail extends StatelessWidget {
                                       },
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.block),
+                                      icon: const Icon(Icons.block, size: 30),
                                       onPressed: () async {
                                         final confirm =
                                             await showDialog<bool>(

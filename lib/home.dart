@@ -44,7 +44,7 @@ class HomeScreenState extends State<HomeScreen>
           Text(
             'Welcome to Active Circle!',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
               fontFamily: 'Pacifico',
             ),
@@ -53,11 +53,17 @@ class HomeScreenState extends State<HomeScreen>
           Text(
             'ActiveCircle(アクティブサークル)は、\nスポーツが好きな人が集まるプラットフォームです。',
             textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: 20),
           Text(
             'あなたと同じスポーツが好きな人を探して、\n仲間を見つけましょう!',
             textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

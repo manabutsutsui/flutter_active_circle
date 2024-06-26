@@ -7,14 +7,14 @@ import 'package:go_router/go_router.dart';
 import '../app.dart';
 
 class AppDrawer extends StatelessWidget {
-  final FirebaseAuth _auth = FirebaseAuth.instance; // FirebaseAuthのインスタンスを取得
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  AppDrawer({super.key}); // 'key'をsuperパラメータに変換
+  AppDrawer({super.key});
 
   Future<void> _signOut(BuildContext context) async {
-    await _auth.signOut(); // ログアウト処理
+    await _auth.signOut();
     if (context.mounted) {
-      Navigator.of(context).pop(); // メニューバーを閉じる
+      Navigator.of(context).pop();
     }
   }
 
@@ -245,6 +245,9 @@ class AppDrawer extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('ログアウトが完了しました。')),
                       );
+                      final state =
+                          context.findAncestorStateOfType<MyStatefulWidgetState>();
+                      state?.navigateToPage(0);
                     }
                   }
                 }

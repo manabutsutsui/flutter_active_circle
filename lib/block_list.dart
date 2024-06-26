@@ -60,7 +60,7 @@ class _BlockListState extends State<BlockList> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+            return const Center(child: Text('エラーが発生しました'));
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {

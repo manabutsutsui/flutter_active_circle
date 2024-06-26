@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'home.dart';
 import 'profile_list.dart';
 import 'message_list.dart';
 import 'profile.dart';
 import 'profile_detail.dart';
-
+import 'create_circle.dart';
 
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({
@@ -82,7 +81,11 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/add'),
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => CreateCircleScreen(),
+          ));
+        },
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -111,5 +114,3 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 }
-
-
