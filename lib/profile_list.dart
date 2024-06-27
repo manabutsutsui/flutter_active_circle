@@ -79,17 +79,12 @@ class ProfileListState extends State<ProfileList> {
               return Column(
                 children: [
                   const AdBanner(),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('プロフィール一覧',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
                   Expanded(
                     child: GridView.builder(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, // 2列に設定
-                        childAspectRatio: 0.75, // カードの縦横比を調整
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
                       ),
                       itemCount: profiles.length,
                       itemBuilder: (context, index) {
@@ -134,7 +129,7 @@ class ProfileListState extends State<ProfileList> {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    '年齢: ${profile['age']}\n好きなスポーツ: \n${profile['sports']}',
+                                    '年齢: ${profile['age']}\n❤️ ${profile['sports']}',
                                     style: const TextStyle(fontSize: 16),
                                     overflow: TextOverflow.ellipsis,
                                   ),

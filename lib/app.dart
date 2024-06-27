@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'home.dart';
 import 'profile_list.dart';
 import 'message_list.dart';
 import 'profile.dart';
 import 'profile_detail.dart';
-import 'create_circle.dart';
 
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({
@@ -19,6 +20,32 @@ class MyStatefulWidget extends StatefulWidget {
 class MyStatefulWidgetState extends State<MyStatefulWidget> {
   late int _selectedIndex;
   final PageController _pageController = PageController();
+  final TextEditingController _circleNameController = TextEditingController();
+  List<String> selectedProfileIds = [];
+
+  void _createCircle() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && _circleNameController.text.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('circles').add({
+        'name': _circleNameController.text,
+        'createdBy': user.uid,
+        'members': [user.uid, ...selectedProfileIds],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.of(context).pop();
+    } else if (user == null) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ログインが完了していません。')),
+      );
+    } else if (_circleNameController.text.isEmpty) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('サークル名を入力してください。')),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -82,9 +109,137 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => CreateCircleScreen(),
-          ));
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const SizedBox(width: 50),
+                            const Text(
+                              'サークル作成',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        const Text('サークルを作成して、たくさんの仲間とつながろう！',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        TextField(
+                          controller: _circleNameController,
+                          decoration: const InputDecoration(
+                              labelText: 'サークル名', hintText: 'サークル名を入力してください'),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text('誰を招待しますか？',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        FutureBuilder<QuerySnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('profiles')
+                              .get(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return const Center(child: Text('プロフィールがありません'));
+                            }
+
+                            final user = FirebaseAuth.instance.currentUser;
+                            final profiles = snapshot.data!.docs
+                                .where((doc) => doc.id != user?.uid)
+                                .toList();
+
+                            return SizedBox(
+                              height: 150,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: profiles.length,
+                                itemBuilder: (context, index) {
+                                  final profile = profiles[index];
+                                  final isSelected =
+                                      selectedProfileIds.contains(profile.id);
+                                  return Card(
+                                    color: isSelected
+                                        ? const Color.fromARGB(
+                                            255, 226, 243, 33)
+                                        : Colors.white,
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            selectedProfileIds
+                                                .remove(profile.id);
+                                          } else {
+                                            selectedProfileIds.add(profile.id);
+                                          }
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Column(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              child: Image.network(
+                                                profile['profileImage'],
+                                                fit: BoxFit.cover,
+                                                width: 80,
+                                                height: 80,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              profile['nickName'],
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _createCircle,
+                          child: const Text('作成'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          );
         },
         child: const Icon(Icons.add),
       ),
@@ -114,3 +269,4 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 }
+
