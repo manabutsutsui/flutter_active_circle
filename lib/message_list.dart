@@ -103,23 +103,23 @@ class _MessageListState extends State<MessageList> {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text('ActiveCircle',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-                fontFamily: 'Pacifico',
-              )),
-          leading: Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              );
-            },
-          ),
+        title: const Text('ActiveCircle',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+              fontFamily: 'Pacifico',
+            )),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
       ),
       drawer: AppDrawer(),
       body: FutureBuilder<QuerySnapshot>(
@@ -133,7 +133,7 @@ class _MessageListState extends State<MessageList> {
           }
 
           if (blockSnapshot.hasError) {
-            return Center(child: Text('エラーが発生しました: ${blockSnapshot.error}'));
+            return const Center(child: Text('エラーが発生しました'));
           }
 
           final blockedUserIds = blockSnapshot.data?.docs
@@ -229,7 +229,6 @@ class _MessageListState extends State<MessageList> {
                       ],
                     ),
                     onTap: () {
-                      // メッセージを既読にする
                       FirebaseFirestore.instance
                           .collection('messages')
                           .doc(doc.id)

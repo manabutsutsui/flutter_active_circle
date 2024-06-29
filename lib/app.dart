@@ -6,7 +6,7 @@ import 'home.dart';
 import 'profile_list.dart';
 import 'message_list.dart';
 import 'profile.dart';
-import 'profile_detail.dart';
+import 'circle.dart';
 
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({
@@ -26,23 +26,42 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
   void _createCircle() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && _circleNameController.text.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('circles').add({
+      final circleRef = await FirebaseFirestore.instance.collection('circles').add({
         'name': _circleNameController.text,
         'createdBy': user.uid,
         'members': [user.uid, ...selectedProfileIds],
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      final profileDoc = await FirebaseFirestore.instance.collection('profiles').doc(user.uid).get();
+      final senderNickName = profileDoc['nickName'];
+      final senderImage = profileDoc['profileImage'];
+
+      for (String profileId in selectedProfileIds) {
+        await FirebaseFirestore.instance.collection('invitations').add({
+          'circleId': circleRef.id,
+          'circleName': _circleNameController.text,
+          'recipientId': profileId,
+          'senderId': user.uid,
+          'senderName': senderNickName,
+          'senderImage': senderImage,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+
       Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('サークルを作成しました。')),
+      );
     } else if (user == null) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ログインが完了していません。')),
+        const SnackBar(content: Text('ログインが完了していません。', style: TextStyle(color: Colors.red))),
       );
     } else if (_circleNameController.text.isEmpty) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('サークル名を入力してください。')),
+        const SnackBar(content: Text('サークル名を入力してください。', style: TextStyle(color: Colors.red))),
       );
     }
   }
@@ -56,9 +75,9 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
   static const _screens = [
     HomeScreen(),
     ProfileList(),
+    CircleScreen(),
     MessageList(),
     Profile(),
-    ProfileDetail(profileId: ''),
   ];
 
   void _onItemTapped(int index) {
@@ -83,12 +102,6 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
         children: _screens.map((screen) {
           return Navigator(
             onGenerateRoute: (settings) {
-              if (settings.name == '/profile_detail') {
-                final profileId = settings.arguments as String;
-                return MaterialPageRoute(
-                  builder: (context) => ProfileDetail(profileId: profileId),
-                );
-              }
               if (settings.name == '/profile') {
                 return MaterialPageRoute(
                   builder: (context) => const Profile(),
@@ -253,7 +266,11 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: 'リスト',
+            label: '一覧',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'サークル'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.message),
@@ -269,4 +286,3 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 }
-

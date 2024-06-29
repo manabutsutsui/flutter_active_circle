@@ -173,13 +173,23 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('サークル'),
+            leading: const Icon(Icons.group),
+            onTap: () {
+              Navigator.pop(context);
+              final state =
+                  context.findAncestorStateOfType<MyStatefulWidgetState>();
+              state?.navigateToPage(2);
+            },
+          ),
+          ListTile(
             title: const Text('メッセージ'),
             leading: const Icon(Icons.message),
             onTap: () {
               Navigator.pop(context);
               final state =
                   context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(2);
+              state?.navigateToPage(3);
             },
           ),
           ListTile(
@@ -189,7 +199,7 @@ class AppDrawer extends StatelessWidget {
               Navigator.pop(context);
               final state =
                   context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(3);
+              state?.navigateToPage(4);
             },
           ),
           if (_auth.currentUser != null)
@@ -253,7 +263,7 @@ class AppDrawer extends StatelessWidget {
                 }
               },
             ),
-          if (_auth.currentUser != null) // ログインしている場合のみ表示
+          if (_auth.currentUser != null)
             ListTile(
               title: const Text(
                 'アカウント削除',
@@ -294,9 +304,9 @@ class AppDrawer extends StatelessWidget {
                 if (confirmDelete == true) {
                   if (context.mounted) {
                     bool reAuthenticated =
-                        await _reAuthenticate(context); // 再認証を行う
+                        await _reAuthenticate(context);
                     if (context.mounted && reAuthenticated) {
-                      await _deleteAccount(context); // アカウント削除処理を呼び出す
+                      await _deleteAccount(context);
                     }
                   }
                 }

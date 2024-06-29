@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/ad_banner.dart';
 import 'parts/app_drawer.dart';
+import 'profile_detail.dart';
 
 class ProfileList extends StatefulWidget {
   const ProfileList({super.key});
@@ -98,10 +99,13 @@ class ProfileListState extends State<ProfileList> {
                                 ),
                               );
                             } else {
-                              Navigator.pushNamed(
+                              Navigator.push(
                                 context,
-                                '/profile_detail',
-                                arguments: profile.id,
+                                MaterialPageRoute(
+                                  builder: (context) => ProfileDetail(
+                                    profileId: profile.id,
+                                  ),
+                                ),
                               );
                             }
                           },

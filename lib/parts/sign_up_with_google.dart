@@ -27,18 +27,15 @@ class SignUpWithGoogleState extends State<SignUpWithGoogle> {
               idToken: googleAuth.idToken,
             );
             await FirebaseAuth.instance.signInWithCredential(credential);
-            // 登録成功後の処理
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Googleアカウントでログインが完了しました。')),
               );
             }
-            if (!mounted) return; // mountedチェックを追加
-            // 'プロフィール'に遷移
+            if (!mounted) return;
             Navigator.of(context).pushReplacementNamed('/profile');
-            // 'プロフィール'画面に遷移した後、_selectedIndexを更新
             final myStatefulWidgetState = context.findAncestorStateOfType<MyStatefulWidgetState>();
-            myStatefulWidgetState?.navigateToPage(3); // 'プロフィール'のインデックスを設定
+            myStatefulWidgetState?.navigateToPage(4);
           }
         } catch (e) {
           print(e);

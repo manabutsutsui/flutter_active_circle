@@ -32,44 +32,54 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
           );
 
           await FirebaseAuth.instance.signInWithCredential(oauthCredential);
-          // 登録成功後の処理
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Appleアカウントでログインが完了しました。')),
             );
-            // 'プロフィール'に遷移
             Navigator.of(context).pushReplacementNamed('/profile');
-            // 'プロフィール'画面に遷移した後、_selectedIndexを更新
-            final myStatefulWidgetState = context.findAncestorStateOfType<MyStatefulWidgetState>();
-            myStatefulWidgetState?.navigateToPage(3); // 'プロフィール'のインデックスを設定
+            final myStatefulWidgetState =
+                context.findAncestorStateOfType<MyStatefulWidgetState>();
+            myStatefulWidgetState?.navigateToPage(4);
           }
         } catch (e) {
           if (e is SignInWithAppleAuthorizationException) {
             switch (e.code) {
               case AuthorizationErrorCode.canceled:
-                print('ユーザーがサインインをキャンセルしました。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Appleアカウントでログインがキャンセルされました。')),
+                );
                 break;
               case AuthorizationErrorCode.failed:
-                print('サインインに失敗しました。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('サインインに失敗しました。')),
+                );
                 break;
               case AuthorizationErrorCode.invalidResponse:
-                print('無効なレスポンスが返されました。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('無効なレスポンスが返されました。')),
+                );
                 break;
               case AuthorizationErrorCode.notHandled:
-                print('サインインが処理されませんでした。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('サインインが処理されませんでした。')),
+                );
                 break;
               case AuthorizationErrorCode.unknown:
-                print('不明なエラーが発生しました。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('不明なエラーが発生しました。')),
+                );
                 break;
               case AuthorizationErrorCode.notInteractive:
-                print('インタラクティブではありません。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('インタラクティブではありません。')),
+                );
                 break;
               default:
-                print('未処理のエラーが発生しました。');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('未処理のエラーが発生しました。')),
+                );
                 break;
             }
-          } else {
-            print('エラーが発生しました: $e');
           }
         }
       },
