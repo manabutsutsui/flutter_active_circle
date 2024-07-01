@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'parts/app_drawer.dart';
 import 'chat.dart';
 
@@ -97,9 +96,14 @@ class CircleScreen extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text('招待者: ${data['senderName']}'),
-                trailing: Text(
-                  DateFormat('MM月dd日 HH:mm')
-                      .format((data['timestamp'] as Timestamp).toDate()),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    FirebaseFirestore.instance
+                        .collection('invitations')
+                        .doc(doc.id)
+                        .delete();
+                  },
                 ),
                 onTap: () async {
                   final result = await showDialog<bool>(
@@ -128,11 +132,6 @@ class CircleScreen extends StatelessWidget {
                             ChatScreen(circleId: data['circleId']),
                       ),
                     );
-                  } else {
-                    await FirebaseFirestore.instance
-                        .collection('invitations')
-                        .doc(doc.id)
-                        .delete();
                   }
                 },
               );

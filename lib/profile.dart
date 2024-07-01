@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/ad_banner.dart';
-import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
+import 'utils/filters.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'parts/app_drawer.dart';
 import 'parts/sign_up_with_google.dart';
@@ -257,17 +257,11 @@ class ProfileState extends State<Profile> {
         body: const Column(
           children: [
             AdBanner(),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(
-                  child: Text('あなたのプロフィールを作成してください',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold))),
-            ),
             Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text('プロフィールを作成するには、ログインが必要です。'),
                     SignUpWithGoogle(),

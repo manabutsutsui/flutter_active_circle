@@ -77,25 +77,17 @@ class _MessageListState extends State<MessageList> {
         body: const Column(
           children: [
             AdBanner(),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(
-                  child: Text('メッセージリスト',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold))),
-            ),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('ログインしてください'),
-                    SignUpWithGoogle(),
-                    SignUpWithApple(),
-                  ],
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('ログインしてください'),
+                  SignUpWithGoogle(),
+                  SignUpWithApple(),
+                ],
               ),
-            ),
+            )
           ],
         ),
       );
