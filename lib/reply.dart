@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
+import 'parts/ad_banner.dart';
 
 class ReplyScreen extends StatefulWidget {
   final String senderId;
@@ -80,9 +81,10 @@ class _ReplyScreenState extends State<ReplyScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
+            const AdBanner(),
             Text(
               '${widget.recipientName}さんにメッセージを送信',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

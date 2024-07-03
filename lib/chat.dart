@@ -16,7 +16,17 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
+  late User? user;
+  late Future<DocumentSnapshot> profileDoc;
   final TextEditingController _messageController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+    profileDoc =
+        FirebaseFirestore.instance.collection('profiles').doc(user?.uid).get();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +63,7 @@ class ChatScreenState extends State<ChatScreen> {
                   .collection('circles')
                   .doc(widget.circleId)
                   .collection('messages')
-                  .orderBy('timestamp', descending: true)
+                  .orderBy('timestamp')
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -69,23 +79,45 @@ class ChatScreenState extends State<ChatScreen> {
                 }
 
                 return ListView(
-                  reverse: true,
                   children: snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
-                    final isMe = data['senderId'] == user.uid;
                     return ListTile(
-                      title: Text(
-                        data['senderName'],
-                        style: TextStyle(
-                          fontWeight:
-                              isMe ? FontWeight.bold : FontWeight.normal,
-                          color: isMe ? Colors.blue : Colors.black,
-                        ),
+                      leading: FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('profiles')
+                            .doc(data['senderId'])
+                            .get(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError || !snapshot.hasData) {
+                            return const CircleAvatar(
+                              child: Icon(Icons.person),
+                            );
+                          }
+                          final profileData =
+                              snapshot.data!.data() as Map<String, dynamic>?;
+                          final profileImage =
+                              profileData?['profileImage'] as String?;
+                          return profileImage != null
+                              ? CircleAvatar(
+                                  backgroundImage: NetworkImage(profileImage),
+                                )
+                              : const CircleAvatar(
+                                  child: Icon(Icons.person),
+                                );
+                        },
                       ),
-                      subtitle: Text(data['message']),
-                      trailing: Text(
-                        DateFormat('MM月dd日 HH:mm')
-                            .format((data['timestamp'] as Timestamp).toDate()),
+                      title: Text(
+                        data['message'],
+                      ),
+                      subtitle: Text(
+                        data['senderName'] +
+                            ' ' +
+                            DateFormat('MM月dd日HH:mm').format(
+                                (data['timestamp'] as Timestamp).toDate()),
                       ),
                     );
                   }).toList(),
@@ -94,7 +126,7 @@ class ChatScreenState extends State<ChatScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
                 Expanded(
@@ -110,13 +142,17 @@ class ChatScreenState extends State<ChatScreen> {
                   onPressed: () async {
                     final message = _messageController.text;
                     if (message.isNotEmpty) {
+                      final profileData =
+                          (await profileDoc).data() as Map<String, dynamic>?;
+                      final String senderName =
+                          profileData?['nickName'] as String? ?? 'Unknown';
                       await FirebaseFirestore.instance
                           .collection('circles')
                           .doc(widget.circleId)
                           .collection('messages')
                           .add({
                         'senderId': user.uid,
-                        'senderName': user.displayName,
+                        'senderName': senderName,
                         'message': message,
                         'timestamp': Timestamp.now(),
                       });

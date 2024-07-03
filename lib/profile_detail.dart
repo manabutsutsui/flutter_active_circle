@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'message.dart';
+import 'parts/ad_banner.dart';
 
 class ProfileDetail extends StatelessWidget {
   final String profileId;
@@ -53,10 +54,11 @@ class ProfileDetail extends StatelessWidget {
           final profile = snapshot.data!.data() as Map<String, dynamic>;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Center(
               child: Column(
                 children: [
+                  const AdBanner(),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(30),
                     child: Image.network(
