@@ -238,13 +238,15 @@ class _MessageListState extends State<MessageList> {
                                 children: [
                                   TextButton(
                                     onPressed: () {
-                                      Navigator.of(context).push(
+                                      Navigator.push(
+                                        context,
                                         MaterialPageRoute(
                                           builder: (context) => ReplyScreen(
                                             senderId: data['recipientId'],
                                             senderName: data['recipientName'],
                                             recipientId: data['senderId'],
                                             recipientName: data['senderName'],
+                                            recipientImage: data['senderImage'],
                                             senderImage: userProfileImage ?? '',
                                           ),
                                         ),

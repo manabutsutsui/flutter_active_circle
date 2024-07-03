@@ -8,6 +8,7 @@ class ReplyScreen extends StatefulWidget {
   final String senderName;
   final String recipientId;
   final String recipientName;
+  final String recipientImage;
   final String senderImage;
 
   const ReplyScreen(
@@ -15,6 +16,7 @@ class ReplyScreen extends StatefulWidget {
       required this.senderName,
       required this.recipientId,
       required this.recipientName,
+      required this.recipientImage,
       required this.senderImage,
       super.key});
 
@@ -84,6 +86,11 @@ class _ReplyScreenState extends State<ReplyScreen> {
             Text(
               '${widget.recipientName}さんにメッセージを送信',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            CircleAvatar(
+              backgroundImage: NetworkImage(widget.recipientImage),
+              radius: 48,
             ),
             const SizedBox(height: 20),
             TextField(

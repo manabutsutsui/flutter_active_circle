@@ -185,6 +185,7 @@ class ProfileDetail extends StatelessWidget {
                                           builder: (context) => MessageScreen(
                                             recipientId: profileId,
                                             recipientName: profile['nickName'],
+                                            recipientImage: profile['profileImage'],
                                           ),
                                         ),
                                       );

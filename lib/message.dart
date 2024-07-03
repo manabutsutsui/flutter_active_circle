@@ -6,11 +6,13 @@ import 'utils/filters.dart'; // フィルタリングのユーティリティを
 class MessageScreen extends StatefulWidget {
   final String recipientId;
   final String recipientName;
+  final String recipientImage;
 
   const MessageScreen({
     super.key,
     required this.recipientId,
     required this.recipientName,
+    required this.recipientImage,
   });
 
   @override
@@ -88,6 +90,11 @@ class MessageScreenState extends State<MessageScreen> {
             Text(
               '${widget.recipientName}さんにメッセージを送信',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            CircleAvatar(
+              backgroundImage: NetworkImage(widget.recipientImage),
+              radius: 48,
             ),
             const SizedBox(height: 20),
             TextField(
