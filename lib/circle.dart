@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/app_drawer.dart';
+import 'parts/ad_banner.dart';
 import 'chat.dart';
 
 class CircleScreen extends StatelessWidget {
@@ -60,84 +61,96 @@ class CircleScreen extends StatelessWidget {
         ),
       ),
       drawer: AppDrawer(),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('invitations')
-            .where('recipientId', isEqualTo: user.uid)
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          const AdBanner(),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('invitations')
+                  .where('recipientId', isEqualTo: user.uid)
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return const Center(child: Text('エラーが発生しました'));
-          }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('エラーが発生しました'));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('招待がありません'));
-          }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('招待がありません'));
+                }
 
-          return ListView(
-            children: snapshot.data!.docs.map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(data['senderImage']),
-                  radius: 32,
-                ),
-                title: Text(
-                  data['circleName'] ?? 'No Circle Name',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text('招待者: ${data['senderName']}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    FirebaseFirestore.instance
-                        .collection('invitations')
-                        .doc(doc.id)
-                        .delete();
-                  },
-                ),
-                onTap: () async {
-                  final result = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('サークルに入りますか？'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('いいえ'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('はい'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (result == true) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ChatScreen(circleId: data['circleId']),
+                return ListView(
+                  children: snapshot.data!.docs.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(data['senderImage']),
+                        radius: 32,
                       ),
+                      title: Text(
+                        data['circleName'] ?? 'No Circle Name',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text('作成者: ${data['senderName']}'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          final result = await showDialog<bool>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('確認', style: TextStyle(color: Colors.red),),
+                                content: const Text('このサークルを削除してもよろしいですか？'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('キャンセル'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop(false);
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('削除'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (result == true) {
+                            await FirebaseFirestore.instance
+                                .collection('invitations')
+                                .doc(doc.id)
+                                .delete();
+                          }
+                        },
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ChatScreen(circleId: data['circleId']),
+                          ),
+                        );
+                      },
                     );
-                  }
-                },
-              );
-            }).toList(),
-          );
-        },
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

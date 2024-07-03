@@ -21,7 +21,7 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
   late int _selectedIndex;
   final PageController _pageController = PageController();
   final TextEditingController _circleNameController = TextEditingController();
-  List<String> selectedProfileIds = [];
+  List<String> selectedProfileIds = [FirebaseAuth.instance.currentUser!.uid];
 
   void _createCircle() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -30,7 +30,7 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
           await FirebaseFirestore.instance.collection('circles').add({
         'name': _circleNameController.text,
         'createdBy': user.uid,
-        'members': [user.uid, ...selectedProfileIds],
+        'members': [...selectedProfileIds],
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -142,28 +142,17 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'ホーム',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: '一覧',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: '一覧'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'サークル'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: 'メッセージ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'プロフィール',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'メッセージ'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'プロフィール'),
         ],
         type: BottomNavigationBarType.fixed,
       ),
     );
   }
+  
 
   Widget _buildCircleCreationSheet(BuildContext context) {
     return StatefulBuilder(
@@ -284,3 +273,4 @@ class MyStatefulWidgetState extends State<MyStatefulWidget> {
     );
   }
 }
+
