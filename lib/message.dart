@@ -76,12 +76,6 @@ class MessageScreenState extends State<MessageScreen> {
               color: Colors.blue,
               fontFamily: 'Pacifico',
             )),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

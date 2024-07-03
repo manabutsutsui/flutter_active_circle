@@ -140,7 +140,7 @@ class CircleScreen extends StatelessWidget {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>
-                                ChatScreen(circleId: data['circleId']),
+                                ChatScreen(circleId: data['circleId'], circleName: data['circleName']),
                           ),
                         );
                       },

@@ -6,14 +6,16 @@ import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final String circleId;
+  final String circleName;
 
-  ChatScreen({required this.circleId});
+  const ChatScreen(
+      {required this.circleId, required this.circleName, super.key});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  State<ChatScreen> createState() => ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
 
   @override
@@ -23,7 +25,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (user == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Chat'),
+          title: Text(
+            widget.circleName,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.blue),
+          ),
         ),
         body: const Center(
           child: Text('ログインしてください'),
@@ -33,7 +39,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: Text(
+          widget.circleName,
+          style:
+              const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+        ),
       ),
       body: Column(
         children: [
@@ -67,7 +77,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       title: Text(
                         data['senderName'],
                         style: TextStyle(
-                          fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isMe ? FontWeight.bold : FontWeight.normal,
                           color: isMe ? Colors.blue : Colors.black,
                         ),
                       ),

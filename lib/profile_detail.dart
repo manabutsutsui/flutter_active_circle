@@ -36,12 +36,6 @@ class ProfileDetail extends StatelessWidget {
               color: Colors.blue,
               fontFamily: 'Pacifico',
             )),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back),
-        ),
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
