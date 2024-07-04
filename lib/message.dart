@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'utils/filters.dart'; // フィルタリングのユーティリティをインポート
+import 'utils/filters.dart';
 import 'parts/ad_banner.dart';
 
 class MessageScreen extends StatefulWidget {

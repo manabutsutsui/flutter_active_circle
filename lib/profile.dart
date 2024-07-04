@@ -91,7 +91,6 @@ class ProfileState extends State<Profile> {
       return;
     }
 
-    // フィルタリングを追加
     final nickName = _nickNameController.text;
     final sports = _sportsController.text;
     final experience = _experienceController.text;
@@ -113,9 +112,8 @@ class ProfileState extends State<Profile> {
       return;
     }
 
-    String imageUrl = _imageUrl ?? ''; // 既存の画像URLを使用
+    String imageUrl = _imageUrl ?? '';
 
-    // 新しい画像が選択されている場合のみアップロード
     if (_profileImage != null && File(_profileImage!.path).existsSync()) {
       imageUrl = await _uploadImage(File(_profileImage!.path));
     }
@@ -183,11 +181,11 @@ class ProfileState extends State<Profile> {
         _bioController.text = data?['bio'] ?? '';
         _imageUrl = data?['profileImage'] ?? '';
         if (_imageUrl!.isNotEmpty) {
-          _profileImage = XFile(_imageUrl!); // XFileにURLを設定
+          _profileImage = XFile(_imageUrl!);
         }
       } else if (mounted) {
         setState(() {
-          _isEditing = false; // データが存在しないため、新規作成モードに設定
+          _isEditing = false;
         });
       }
     }

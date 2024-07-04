@@ -44,7 +44,7 @@ class HomeScreenState extends State<HomeScreen>
           Text(
             'Welcome to Active Circle!',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               fontFamily: 'Pacifico',
             ),
@@ -74,6 +74,7 @@ class HomeScreenState extends State<HomeScreen>
     return const Column(
       children: [
         SignUpWithGoogle(),
+        SizedBox(height: 10),
         SignUpWithApple(),
       ],
     );
@@ -102,15 +103,37 @@ class HomeScreenState extends State<HomeScreen>
         ),
       ),
       drawer: AppDrawer(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const AdBanner(),
-            const SizedBox(height: 20),
-            buildFadeTransition(),
-            const SizedBox(height: 20),
-            buildButtons(context),
-          ],
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue[100]!, Colors.blue[400]!],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              children: [
+                const AdBanner(),
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: buildFadeTransition(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                buildButtons(context),
+              ],
+            ),
+          ),
         ),
       ),
     );

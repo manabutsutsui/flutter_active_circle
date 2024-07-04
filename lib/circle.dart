@@ -25,6 +25,16 @@ class _CircleScreenState extends State<CircleScreen> {
     }
   }
 
+  Future<void> _removeUserFromCircle(String circleId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final circleRef = FirebaseFirestore.instance.collection('circles').doc(circleId);
+      await circleRef.update({
+        'members': FieldValue.arrayRemove([user.uid])
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -108,7 +118,7 @@ class _CircleScreenState extends State<CircleScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              const Text('サークルを作成して、たくさんの仲間とつながろう！',
+              const Text('サークルを作成して、たくさんの仲間とつながろう!',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               TextField(
                 controller: _circleNameController,
@@ -321,6 +331,7 @@ class _CircleScreenState extends State<CircleScreen> {
                                 .collection('invitations')
                                 .doc(doc.id)
                                 .delete();
+                            await _removeUserFromCircle(data['circleId']);
                           }
                         },
                       ),
