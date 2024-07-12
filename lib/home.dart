@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'parts/ad_banner.dart';
 import 'parts/sign_up_with_google.dart';
 import 'parts/sign_up_with_apple.dart';
@@ -12,72 +14,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen>
-  with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
+    with SingleTickerProviderStateMixin {
+  late VideoPlayerController _videoController;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-    _animationController.forward();
+
+    _videoController = VideoPlayerController.asset('assets/home.mp4')
+      ..initialize().then((_) {
+        _videoController.play();
+        _videoController.setLooping(false);
+        setState(() {});
+      });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _videoController.dispose();
     super.dispose();
-  }
-
-  Widget buildFadeTransition() {
-    return FadeTransition(
-      opacity: _animation,
-      child: const Column(
-        children: [
-          Text(
-            'Welcome to Active Circle!',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Pacifico',
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'ActiveCircle(アクティブサークル)は、\nスポーツが好きな人が集まるプラットフォームです。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'あなたと同じスポーツが好きな人を探して、\n仲間を見つけましょう!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildButtons(BuildContext context) {
-    return const Column(
-      children: [
-        SignUpWithGoogle(),
-        SizedBox(height: 10),
-        SignUpWithApple(),
-      ],
-    );
   }
 
   @override
@@ -103,38 +58,30 @@ class HomeScreenState extends State<HomeScreen>
         ),
       ),
       drawer: AppDrawer(),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue[100]!, Colors.blue[400]!],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _videoController.value.isInitialized
+              ? AspectRatio(
+                  aspectRatio: _videoController.value.aspectRatio,
+                  child: VideoPlayer(_videoController),
+                )
+              : Container(),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Column(
               children: [
+                if (FirebaseAuth.instance.currentUser == null) ...[
+                  const SignUpWithGoogle(),
+                  const SignUpWithApple(),
+                ],
                 const AdBanner(),
-                const SizedBox(height: 20),
-                Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: buildFadeTransition(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                buildButtons(context),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
