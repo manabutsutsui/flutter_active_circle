@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-import '../app.dart';
+import '../pages/create_nickname.dart';
 
 class SignUpWithApple extends StatefulWidget {
   const SignUpWithApple({super.key});
@@ -33,13 +33,9 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
 
           await FirebaseAuth.instance.signInWithCredential(oauthCredential);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Appleアカウントでログインが完了しました。')),
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const CreateNickname()),
             );
-            Navigator.of(context).pushReplacementNamed('/profile');
-            final myStatefulWidgetState =
-                context.findAncestorStateOfType<MyStatefulWidgetState>();
-            myStatefulWidgetState?.navigateToPage(4);
           }
         } catch (e) {
           if (e is SignInWithAppleAuthorizationException) {

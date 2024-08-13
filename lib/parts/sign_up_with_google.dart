@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-import '../app.dart';
+import '../pages/create_nickname.dart';
 
 class SignUpWithGoogle extends StatefulWidget {
   const SignUpWithGoogle({super.key});
@@ -28,14 +28,10 @@ class SignUpWithGoogleState extends State<SignUpWithGoogle> {
             );
             await FirebaseAuth.instance.signInWithCredential(credential);
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Googleアカウントでログインが完了しました。')),
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const CreateNickname()),
               );
             }
-            if (!mounted) return;
-            Navigator.of(context).pushReplacementNamed('/profile');
-            final myStatefulWidgetState = context.findAncestorStateOfType<MyStatefulWidgetState>();
-            myStatefulWidgetState?.navigateToPage(4);
           }
         } catch (e) {
           print(e);

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'firebase_options.dart';
-import 'terms_of_service.dart';
 import 'utils/config.dart';
-import 'block_list.dart';
-import 'app.dart';
+import 'parts/base.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'pages/create_account.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,43 +13,20 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await Config.loadConfig();
-  final prefs = await SharedPreferences.getInstance();
-  final acceptedTerms = prefs.getBool('acceptedTerms') ?? false;
-  runApp(MyApp(acceptedTerms: acceptedTerms));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool acceptedTerms;
-
-  const MyApp({super.key, required this.acceptedTerms});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final GoRouter router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => acceptedTerms ? const SplashScreen() : const TermsOfServiceScreen(),
-        ),
-        GoRoute(
-          path: '/app',
-          builder: (context, state) => const MyStatefulWidget(),
-        ),
-        GoRoute(
-          path: '/block_list',
-          builder: (context, state) => const BlockList(),
-        ),
-      ],
-    );
-
-    return MaterialApp.router(
+    return MaterialApp(
       title: 'ActiveCircle',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
+      home: const SplashScreen(),
     );
   }
 }
@@ -64,7 +39,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class SplashScreenState extends State<SplashScreen>
-  with TickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacity;
 
@@ -72,16 +47,28 @@ class SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
     _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
 
     _controller.forward().then((_) {
       Timer(const Duration(seconds: 2), () {
-        context.go('/app');
+        _checkAuthAndNavigate();
       });
     });
+  }
+
+  void _checkAuthAndNavigate() {
+    if (FirebaseAuth.instance.currentUser != null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const Base()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const CreateAccount()),
+      );
+    }
   }
 
   @override
@@ -94,27 +81,14 @@ class SplashScreenState extends State<SplashScreen>
           children: <Widget>[
             Align(
               alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    'ActiveCircle',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                      fontFamily: 'Pacifico',
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'スポーツ好きと繋がろう！',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'ActiveCircle',
+                style: TextStyle(
+                  fontSize: 54,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                  fontFamily: 'Pacifico',
+                ),
               ),
             ),
           ],

@@ -12,7 +12,7 @@ class AdBanner extends StatefulWidget {
 }
 
 class AdBannerState extends State<AdBanner> {
-  BannerAd? _bannerAd; // lateを削除し、BannerAd?に変更
+  BannerAd? _bannerAd;
   bool _isBannerAdReady = false;
 
   @override
@@ -54,7 +54,7 @@ class AdBannerState extends State<AdBanner> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity, // 横いっぱいに広がるように設定
+      width: double.infinity,
       height: _bannerAd?.size.height.toDouble() ?? 0,
       alignment: Alignment.center,
       child: _isBannerAdReady ? AdWidget(ad: _bannerAd!) : const SizedBox(),

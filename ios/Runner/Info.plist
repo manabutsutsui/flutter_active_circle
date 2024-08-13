@@ -38,7 +38,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>カメラへのアクセスを許可してください。</string>
+	<string>カメラへのアクセスが必要です</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>プロフィール写真の選択のために、写真へのアクセスが必要です。</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>

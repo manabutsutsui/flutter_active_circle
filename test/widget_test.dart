@@ -12,7 +12,7 @@ import 'package:active_circle/main.dart';
 
 void main() {
   testWidgets('アプリが正常に起動するかテスト', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp(acceptedTerms: true));
+    await tester.pumpWidget(const MyApp());
 
     expect(find.text('ActiveCircle'), findsOneWidget);
     expect(find.text('スポーツ好きと繋がりましょう！'), findsOneWidget);

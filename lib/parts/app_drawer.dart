@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:go_router/go_router.dart';
-import '../app.dart';
+import '../pages/create_account.dart';
+import '../parts/base.dart';
+import '../pages/block_list.dart';
 
 class AppDrawer extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -127,7 +128,7 @@ class AppDrawer extends StatelessWidget {
           .delete();
       await user.delete();
       if (context.mounted) {
-        Navigator.of(context).pop(); // メニューバーを閉じる
+        Navigator.of(context).pop();
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -152,62 +153,15 @@ class AppDrawer extends StatelessWidget {
                   fontFamily: 'Pacifico'),
             ),
           ),
-          ListTile(
-            title: const Text('ホーム'),
-            leading: const Icon(Icons.home),
-            onTap: () {
-              Navigator.pop(context);
-              final state =
-                  context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(0);
-            },
-          ),
-          ListTile(
-            title: const Text('一覧'),
-            leading: const Icon(Icons.list),
-            onTap: () {
-              Navigator.pop(context);
-              final state =
-                  context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(1);
-            },
-          ),
-          ListTile(
-            title: const Text('サークル'),
-            leading: const Icon(Icons.group),
-            onTap: () {
-              Navigator.pop(context);
-              final state =
-                  context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(2);
-            },
-          ),
-          ListTile(
-            title: const Text('メッセージ'),
-            leading: const Icon(Icons.message),
-            onTap: () {
-              Navigator.pop(context);
-              final state =
-                  context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(3);
-            },
-          ),
-          ListTile(
-            title: const Text('プロフィール'),
-            leading: const Icon(Icons.person),
-            onTap: () {
-              Navigator.pop(context);
-              final state =
-                  context.findAncestorStateOfType<MyStatefulWidgetState>();
-              state?.navigateToPage(4);
-            },
-          ),
           if (_auth.currentUser != null)
             ListTile(
               title: const Text('ブロックリスト'),
               leading: const Icon(Icons.block),
               onTap: () {
-                context.go('/block_list');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BlockList()),
+                );
               },
             ),
           if (_auth.currentUser != null)
@@ -250,14 +204,17 @@ class AppDrawer extends StatelessWidget {
 
                 if (confirmLogout == true) {
                   if (context.mounted) {
-                    await _signOut(context); // ログアウト処理を呼び出す
+                    await _signOut(context);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('ログアウトが完了しました。')),
                       );
-                      final state =
-                          context.findAncestorStateOfType<MyStatefulWidgetState>();
-                      state?.navigateToPage(0);
+                      final baseState = context.findAncestorStateOfType<BaseState>();
+                      baseState?.setShowBottomNavigationBar(false);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateAccount()),
+                      );
                     }
                   }
                 }
@@ -303,12 +260,17 @@ class AppDrawer extends StatelessWidget {
 
                 if (confirmDelete == true) {
                   if (context.mounted) {
-                    bool reAuthenticated =
-                        await _reAuthenticate(context);
+                    bool reAuthenticated = await _reAuthenticate(context);
                     if (context.mounted && reAuthenticated) {
                       await _deleteAccount(context);
                     }
                   }
+                  final baseState = context.findAncestorStateOfType<BaseState>();
+                      baseState?.setShowBottomNavigationBar(false);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateAccount()),
+                      );
                 }
               },
             ),
