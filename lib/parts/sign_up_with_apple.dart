@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-import '../pages/create_nickname.dart';
 
 class SignUpWithApple extends StatefulWidget {
-  const SignUpWithApple({super.key});
+  final Function(BuildContext, String) onSignInComplete;
+
+  const SignUpWithApple({super.key, required this.onSignInComplete});
 
   @override
   SignUpWithAppleState createState() => SignUpWithAppleState();
@@ -31,11 +32,9 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
             accessToken: appleCredential.authorizationCode,
           );
 
-          await FirebaseAuth.instance.signInWithCredential(oauthCredential);
-          if (mounted) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const CreateNickname()),
-            );
+          final userCredential = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+          if (mounted && userCredential.user != null) {
+            widget.onSignInComplete(context, userCredential.user!.uid);
           }
         } catch (e) {
           if (e is SignInWithAppleAuthorizationException) {

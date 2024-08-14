@@ -5,9 +5,18 @@ import '../parts/app_drawer.dart';
 import 'profile_edit.dart';
 import 'following.dart';
 import 'follower.dart';
+import 'profile_detail.dart';
+import 'post_detail.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  final String userId;
+  final bool isCurrentUser;
+
+  const Profile({
+    super.key,
+    required this.userId,
+    this.isCurrentUser = true,
+  });
 
   @override
   ProfileState createState() => ProfileState();
@@ -18,7 +27,6 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   String _imageUrl = '';
   int _followingCount = 0;
   int _followerCount = 0;
-  int _postCount = 0;
   late TabController _tabController;
 
   @override
@@ -35,44 +43,34 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _loadProfileData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(user.uid)
-          .get();
-      if (doc.exists && mounted) {
-        setState(() {
-          _username = doc.data()?['nickName'] ?? '';
-          _imageUrl = doc.data()?['profileImageUrl'] ?? '';
-        });
-      }
+    final doc = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(widget.userId)
+        .get();
+    if (doc.exists && mounted) {
+      setState(() {
+        _username = doc.data()?['nickName'] ?? '';
+        _imageUrl = doc.data()?['profileImageUrl'] ?? '';
+      });
+    }
 
-      // フォロー数を取得
-      final followingDocs = await FirebaseFirestore.instance
-          .collection('follows')
-          .where('followerId', isEqualTo: user.uid)
-          .get();
-      
-      // フォロワー数を取得
-      final followerDocs = await FirebaseFirestore.instance
-          .collection('follows')
-          .where('followingId', isEqualTo: user.uid)
-          .get();
+    // フォロー数を取得
+    final followingDocs = await FirebaseFirestore.instance
+        .collection('follows')
+        .where('followerId', isEqualTo: widget.userId)
+        .get();
+    
+    // フォロワー数を取得
+    final followerDocs = await FirebaseFirestore.instance
+        .collection('follows')
+        .where('followingId', isEqualTo: widget.userId)
+        .get();
 
-      // 投稿数を取得（postsコレクションがある場合）
-      final postDocs = await FirebaseFirestore.instance
-          .collection('posts')
-          .where('userId', isEqualTo: user.uid)
-          .get();
-
-      if (mounted) {
-        setState(() {
-          _followingCount = followingDocs.docs.length;
-          _followerCount = followerDocs.docs.length;
-          _postCount = postDocs.docs.length;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _followingCount = followingDocs.docs.length;
+        _followerCount = followerDocs.docs.length;
+      });
     }
   }
 
@@ -110,7 +108,7 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               fontFamily: 'Pacifico',
             )),
       ),
-      drawer: AppDrawer(),
+      drawer: widget.isCurrentUser ? AppDrawer() : null,
       body: Column(
         children: [
           const SizedBox(height: 20),
@@ -137,7 +135,7 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => Following(
-                      userId: FirebaseAuth.instance.currentUser!.uid,
+                      userId: widget.userId,
                       onFollowChanged: _updateFollowCounts,
                     )),
                   );
@@ -149,31 +147,41 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => Follower(
-                      userId: FirebaseAuth.instance.currentUser!.uid,
+                      userId: widget.userId,
                       onFollowChanged: _updateFollowCounts,
                     )),
                   );
                 },
                 child: _buildStatColumn('フォロワー', _followerCount.toString()),
               ),
-              _buildStatColumn('ポスト', _postCount.toString()),
             ],
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileEdit()),
-              );
-              if (result == true) {
-                await _loadProfileData();
-              }
-            },
-            style: ElevatedButton.styleFrom(
+          if (widget.isCurrentUser)
+            ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileEdit()),
+                );
+                if (result == true) {
+                  await _loadProfileData();
+                }
+              },
+              style: ElevatedButton.styleFrom(),
+              child: const Text('プロフィールを編集'),
+            )
+          else
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileDetail(userId: widget.userId)),
+                );
+              },
+              style: ElevatedButton.styleFrom(),
+              child: const Text('プロフィール詳細'),
             ),
-            child: const Text('プロフィールを編集'),
-          ),
           const SizedBox(height: 20),
           TabBar(
             controller: _tabController,
@@ -217,13 +225,10 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildPostsGrid() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return const SizedBox();
-
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('posts')
-          .where('userId', isEqualTo: user.uid)
+          .where('userId', isEqualTo: widget.userId)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -241,12 +246,22 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             final post = snapshot.data!.docs[index];
-            return AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                post['imageUrl'] ?? '',
-                width: double.infinity,
-                fit: BoxFit.cover,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostDetailScreen(postData: post.data() as Map<String, dynamic>),
+                  ),
+                );
+              },
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  post['imageUrl'] ?? '',
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
             );
           },
@@ -256,13 +271,10 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildLikesGrid() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return const SizedBox();
-
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('likes')
-          .where('userId', isEqualTo: user.uid)
+          .where('userId', isEqualTo: widget.userId)
           .snapshots(),
       builder: (context, likesSnapshot) {
         if (likesSnapshot.connectionState == ConnectionState.waiting) {
@@ -288,7 +300,7 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               return const Center(child: CircularProgressIndicator());
             }
             if (!postsSnapshot.hasData || postsSnapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('いいねした投稿が見つかりません'));
+              return const Center(child: Text('いいねした投稿がありません'));
             }
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -299,12 +311,22 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               itemCount: postsSnapshot.data!.docs.length,
               itemBuilder: (context, index) {
                 final post = postsSnapshot.data!.docs[index];
-                return AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    post['imageUrl'] ?? '',
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(postData: post.data() as Map<String, dynamic>),
+                      ),
+                    );
+                  },
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      post['imageUrl'] ?? '',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 );
               },

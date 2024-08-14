@@ -64,7 +64,16 @@ class HomeScreenState extends State<HomeScreen> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('投稿がありません'));
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.article, size: 86, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('投稿がありません', style: TextStyle(fontSize: 18)),
+                      ],
+                    ),
+                  );
                 }
 
                 return ListView.builder(
@@ -155,7 +164,16 @@ class HomeScreenState extends State<HomeScreen> {
                     .toList() ?? [];
 
                 if (followingIds.isEmpty) {
-                  return const Center(child: Text('フォロー中のユーザーがいません'));
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_off, size: 86, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('フォロー中のユーザーがいません', style: TextStyle(fontSize: 18)),
+                      ],
+                    ),
+                  );
                 }
 
                 return StreamBuilder<QuerySnapshot>(
@@ -235,7 +253,6 @@ class HomeScreenState extends State<HomeScreen> {
                                         ],
                                       ),
                                     ),
-                                    const Icon(Icons.settings),
                                   ],
                                 ),
                               ),

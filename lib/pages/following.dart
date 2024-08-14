@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile.dart';
 
 class Following extends StatefulWidget {
   final String userId;
@@ -94,16 +95,31 @@ class FollowingState extends State<Following> {
                       backgroundImage: NetworkImage(profileData['profileImageUrl'] ?? ''),
                     ),
                     title: Text(profileData['nickName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold),),
-                    trailing: ElevatedButton(
-                      onPressed: () => _toggleFollow(followingId),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                      ),
-                      child: const Text(
-                        'フォロー中',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                    trailing: currentUserId == widget.userId
+                        ? ElevatedButton(
+                            onPressed: () => _toggleFollow(followingId),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey,
+                            ),
+                            child: const Text(
+                              'フォロー中',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        : null,
+                    onTap: () {
+                      if (followingId != currentUserId) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Profile(
+                              userId: followingId,
+                              isCurrentUser: false,
+                            ),
+                          ),
+                        );
+                      }
+                    },
                   );
                 },
               );

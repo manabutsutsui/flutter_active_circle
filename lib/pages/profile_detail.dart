@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileDetail extends StatefulWidget {
@@ -12,11 +11,11 @@ class ProfileDetail extends StatefulWidget {
 }
 
 class ProfileDetailState extends State<ProfileDetail> {
-  String _username = '';
-  String _imageUrl = '';
-  int _followingCount = 0;
-  int _followerCount = 0;
-  int _postCount = 0;
+  String _nickname = '';
+  String _bio = '';
+  String _gender = '';
+  DateTime? _birthDate;
+  String? _profileImageUrl;
 
   @override
   void initState() {
@@ -29,33 +28,13 @@ class ProfileDetailState extends State<ProfileDetail> {
         .collection('profiles')
         .doc(widget.userId)
         .get();
-    if (doc.exists && mounted) {
+    if (doc.exists) {
       setState(() {
-        _username = doc.data()?['nickName'] ?? '';
-        _imageUrl = doc.data()?['profileImageUrl'] ?? '';
-      });
-    }
-
-    final followingDocs = await FirebaseFirestore.instance
-        .collection('follows')
-        .where('followerId', isEqualTo: widget.userId)
-        .get();
-    
-    final followerDocs = await FirebaseFirestore.instance
-        .collection('follows')
-        .where('followingId', isEqualTo: widget.userId)
-        .get();
-
-    final postDocs = await FirebaseFirestore.instance
-        .collection('posts')
-        .where('userId', isEqualTo: widget.userId)
-        .get();
-
-    if (mounted) {
-      setState(() {
-        _followingCount = followingDocs.docs.length;
-        _followerCount = followerDocs.docs.length;
-        _postCount = postDocs.docs.length;
+        _nickname = doc.data()?['nickName'] ?? '';
+        _bio = doc.data()?['bio'] ?? '';
+        _gender = doc.data()?['gender'] ?? '未設定';
+        _birthDate = doc.data()?['birthDate']?.toDate();
+        _profileImageUrl = doc.data()?['profileImageUrl'];
       });
     }
   }
@@ -64,57 +43,59 @@ class ProfileDetailState extends State<ProfileDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_username, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('プロフィール詳細',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            )),
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
         children: [
-          const SizedBox(height: 20),
-          _imageUrl.isNotEmpty
-              ? CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(_imageUrl),
-                )
-              : const CircleAvatar(
-                  radius: 50,
-                  child: Icon(Icons.person, size: 50),
-                ),
-          const SizedBox(height: 10),
-          Text(
-            _username,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: _profileImageUrl != null
+                  ? NetworkImage(_profileImageUrl!)
+                  : null,
+              child: _profileImageUrl == null
+                  ? const Icon(Icons.person, size: 50)
+                  : null,
+            ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatColumn('フォロー中', _followingCount.toString()),
-              _buildStatColumn('フォロワー', _followerCount.toString()),
-              _buildStatColumn('ポスト', _postCount.toString()),
-            ],
-          ),
-          // ここに他のプロフィール情報を追加できます
+          const SizedBox(height: 32),
+          _buildInfoTile('名前', _nickname),
+          _buildInfoTile('自己紹介', _bio),
+          _buildInfoTile('性別', _gender),
+          _buildInfoTile('生年月日', _birthDate == null
+              ? '未設定'
+              : '${_birthDate!.year}年${_birthDate!.month}月${_birthDate!.day}日'),
         ],
       ),
     );
   }
 
-  Widget _buildStatColumn(String label, String count) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 4),
-        SizedBox(
-          width: 80,
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 14),
-            textAlign: TextAlign.center,
+  Widget _buildInfoTile(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: const TextStyle(fontSize: 18),
+          ),
+          const Divider(),
+        ],
+      ),
     );
   }
 }

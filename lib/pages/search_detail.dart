@@ -34,7 +34,16 @@ class SearchDetailScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('この種目の投稿はまだありません'));
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.article, size: 86, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('この種目の投稿はまだありません', style: TextStyle(fontSize: 18)),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -96,7 +105,6 @@ class SearchDetailScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          const Icon(Icons.settings),
                         ],
                       ),
                     ),

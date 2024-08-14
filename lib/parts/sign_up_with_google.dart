@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-import '../pages/create_nickname.dart';
 
 class SignUpWithGoogle extends StatefulWidget {
-  const SignUpWithGoogle({super.key});
+  final Function(BuildContext, String) onSignInComplete;
+
+  const SignUpWithGoogle({super.key, required this.onSignInComplete});
 
   @override
   SignUpWithGoogleState createState() => SignUpWithGoogleState();
@@ -26,15 +27,16 @@ class SignUpWithGoogleState extends State<SignUpWithGoogle> {
               accessToken: googleAuth.accessToken,
               idToken: googleAuth.idToken,
             );
-            await FirebaseAuth.instance.signInWithCredential(credential);
-            if (mounted) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const CreateNickname()),
-              );
+            final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+            if (mounted && userCredential.user != null) {
+              widget.onSignInComplete(context, userCredential.user!.uid);
             }
           }
         } catch (e) {
           print(e);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Googleアカウントでのサインインに失敗しました。')),
+          );
         }
       },
     );

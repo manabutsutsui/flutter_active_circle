@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../parts/sign_up_with_google.dart';
 import '../parts/sign_up_with_apple.dart';
 import 'package:flutter/gestures.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../parts/base.dart';
+import 'create_nickname.dart';
 
 class CreateAccount extends StatelessWidget {
   const CreateAccount({super.key});
@@ -45,7 +48,7 @@ class CreateAccount extends StatelessWidget {
 
 以下の行為は厳禁とします：
 - 本アプリの不正利用、ハッキング、リバースエンジニアリング
-- 他のユーザーへの��がらせや迷惑行為
+- 他のユーザーへの嫌がらせや迷惑行為
 - 虚偽の情報の提供や、なりすまし行為
 - 本アプリの運営を妨害する行為
 
@@ -167,6 +170,23 @@ tsutsui4012@gmail.com
     );
   }
 
+  Future<void> _onSignInComplete(BuildContext context, String userId) async {
+    DocumentSnapshot userProfile = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(userId)
+        .get();
+
+    if (userProfile.exists) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const Base()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const CreateNickname()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,8 +199,8 @@ tsutsui4012@gmail.com
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
-              const SignUpWithGoogle(),
-              const SignUpWithApple(),
+              SignUpWithGoogle(onSignInComplete: _onSignInComplete),
+              SignUpWithApple(onSignInComplete: _onSignInComplete),
               const SizedBox(height: 8),
               RichText(
                 textAlign: TextAlign.center,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> postData;
@@ -147,6 +148,28 @@ class PostDetailScreenState extends State<PostDetailScreen> {
     return userDoc.data()?['profileImageUrl'] ?? '';
   }
 
+  Future<void> _deletePost() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postData['postId'])
+          .delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('投稿を削除しました')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('投稿の削除に失敗しました')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,12 +177,57 @@ class PostDetailScreenState extends State<PostDetailScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CircleAvatar(
-              backgroundImage:
-                  NetworkImage(widget.postData['userImageUrl'] ?? ''),
-              radius: 20,
+            GestureDetector(
+              onTap: () {
+                if (widget.postData['userId'] != currentUserId) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Profile(
+                        userId: widget.postData['userId'],
+                        isCurrentUser: false,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: CircleAvatar(
+                backgroundImage:
+                    NetworkImage(widget.postData['userImageUrl'] ?? ''),
+                radius: 20,
+              ),
             ),
-            if (!_isOwnPost)
+            if (_isOwnPost)
+              IconButton(
+                icon: const Icon(Icons.delete, size: 30,),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('確認'),
+                        content: const Text('この投稿を削除しますか？'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('キャンセル'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('削除'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _deletePost();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              )
+            else if (!_isOwnPost)
               SizedBox(
                 width: 120,
                 child: ElevatedButton(

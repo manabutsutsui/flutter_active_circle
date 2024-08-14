@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile.dart';
 
 class Follower extends StatefulWidget {
   final String userId;
@@ -127,6 +128,19 @@ class FollowerState extends State<Follower> {
                                 ),
                               )
                             : null,
+                        onTap: () {
+                          if (followerId != currentUserId) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Profile(
+                                  userId: followerId,
+                                  isCurrentUser: false,
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       );
                     },
                   );

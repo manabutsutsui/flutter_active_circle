@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../pages/home.dart';
 import '../pages/search.dart';
 import '../pages/notification.dart';
-import '../pages/profile.dart';
 import '../pages/post.dart';
+import '../pages/profile.dart';
 
 class Base extends StatefulWidget {
   const Base({
@@ -25,12 +26,18 @@ class BaseState extends State<Base> {
     _selectedIndex = 0;
   }
 
-  static final _screens = [
+  Widget _buildProfileScreen() {
+    return Profile(
+      userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+      isCurrentUser: true,
+    );
+  }
+
+  static final List<Widget> _screens = [
     const HomeScreen(),
     const SearchScreen(),
     const PostPage(),
     const NotificationScreen(),
-    const Profile(),
   ];
 
   void _onItemTapped(int index) {
@@ -52,16 +59,26 @@ class BaseState extends State<Base> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        children: _screens.map((screen) {
-          return Navigator(
+        children: [
+          ..._screens.map((screen) {
+            return Navigator(
+              onGenerateRoute: (settings) {
+                return MaterialPageRoute(
+                  builder: (context) => screen,
+                  settings: settings,
+                );
+              },
+            );
+          }),
+          Navigator(
             onGenerateRoute: (settings) {
               return MaterialPageRoute(
-                builder: (context) => screen,
+                builder: (context) => _buildProfileScreen(),
                 settings: settings,
               );
             },
-          );
-        }).toList(),
+          ),
+        ],
         onPageChanged: (index) {
           setState(() {
             _selectedIndex = index;

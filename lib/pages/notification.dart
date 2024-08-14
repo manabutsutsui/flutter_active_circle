@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'profile_detail.dart';
+import 'profile.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
@@ -35,7 +35,16 @@ class NotificationScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('通知はありません'));
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.notifications_off, size: 86, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('通知はありません', style: TextStyle(fontSize: 18)),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -57,7 +66,10 @@ class NotificationScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProfileDetail(userId: data['senderId']),
+                      builder: (context) => Profile(
+                        userId: data['senderId'],
+                        isCurrentUser: false,
+                      ),
                     ),
                   );
                 },
