@@ -144,7 +144,10 @@ class PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<String> _getUserProfileImageUrl(String userId) async {
-    final userDoc = await FirebaseFirestore.instance.collection('profiles').doc(userId).get();
+    final userDoc = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(userId)
+        .get();
     return userDoc.data()?['profileImageUrl'] ?? '';
   }
 
@@ -167,6 +170,75 @@ class PostDetailScreenState extends State<PostDetailScreen> {
           const SnackBar(content: Text('投稿の削除に失敗しました')),
         );
       }
+    }
+  }
+
+  void _showReportDialog() {
+    String reportReason = '';
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('投稿を報告'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('報告理由を記入してください：'),
+              const SizedBox(height: 16),
+              TextField(
+                maxLines: 3,
+                onChanged: (value) {
+                  reportReason = value;
+                },
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: '報告理由を入力',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (reportReason.isNotEmpty) {
+                  _reportPost(reportReason);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('報告する'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _reportPost(String reason) async {
+    if (currentUserId == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('reports').add({
+        'postId': widget.postData['postId'],
+        'reporterId': currentUserId,
+        'reportedUserId': widget.postData['userId'],
+        'reason': reason,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('投稿を報告しました')),
+      );
+    } catch (e) {
+      print('Error reporting post: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('投稿の報告に失敗しました')),
+      );
     }
   }
 
@@ -199,7 +271,10 @@ class PostDetailScreenState extends State<PostDetailScreen> {
             ),
             if (_isOwnPost)
               IconButton(
-                icon: const Icon(Icons.delete, size: 30,),
+                icon: const Icon(
+                  Icons.delete,
+                  size: 30,
+                ),
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -266,22 +341,14 @@ class PostDetailScreenState extends State<PostDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.postData['title'] ?? '',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '投稿者: ${widget.postData['userName'] ?? ''}',
-                          ),
-                        ],
+                      Text(
+                        widget.postData['title'] ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
                       ),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           IconButton(
@@ -301,7 +368,19 @@ class PostDetailScreenState extends State<PostDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '投稿者: ${widget.postData['userName'] ?? ''}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.flag),
+                        onPressed: _showReportDialog,
+                      ),
+                    ],
+                  ),
                   Text(
                     widget.postData['content'] ?? '',
                     style: const TextStyle(fontSize: 18),

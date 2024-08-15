@@ -96,6 +96,43 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     }
   }
 
+  void _showBlockDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ユーザーをブロック'),
+          content: const Text('このユーザーをブロックしますか？'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('キャンセル'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('ブロック', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                if (currentUserId != null) {
+                  await FirebaseFirestore.instance.collection('blocks').add({
+                    'blockedBy': currentUserId,
+                    'blockedUser': widget.userId,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('ユーザーをブロックしました')),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,6 +144,16 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
               color: Colors.blue,
               fontFamily: 'Pacifico',
             )),
+        actions: widget.isCurrentUser
+            ? null
+            : [
+                IconButton(
+                  icon: const Icon(Icons.block),
+                  onPressed: () {
+                    _showBlockDialog();
+                  },
+                ),
+              ],
       ),
       drawer: widget.isCurrentUser ? AppDrawer() : null,
       body: Column(
