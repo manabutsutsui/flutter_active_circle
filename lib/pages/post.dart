@@ -73,7 +73,10 @@ class PostPageState extends State<PostPage> {
       await storageRef.putFile(_image!);
       final imageUrl = await storageRef.getDownloadURL();
 
-      final postRef = await FirebaseFirestore.instance.collection('posts').add({
+      final userRef = FirebaseFirestore.instance.collection('profiles').doc(user.uid);
+      final postRef = userRef.collection('posts').doc();
+
+      await postRef.set({
         'userId': user.uid,
         'userName': userName,
         'userImageUrl': userImageUrl,
@@ -87,9 +90,26 @@ class PostPageState extends State<PostPage> {
           userName.toLowerCase(),
           _selectedSportTag!.toLowerCase(),
         ],
+        'postId': postRef.id,
       });
 
-      await postRef.update({'postId': postRef.id});
+      // メインの posts コレクションにも同じデータを保存
+      await FirebaseFirestore.instance.collection('posts').doc(postRef.id).set({
+        'userId': user.uid,
+        'userName': userName,
+        'userImageUrl': userImageUrl,
+        'title': _titleController.text,
+        'content': _contentController.text,
+        'sportTag': _selectedSportTag,
+        'imageUrl': imageUrl,
+        'createdAt': FieldValue.serverTimestamp(),
+        'searchableFields': [
+          _titleController.text.toLowerCase(),
+          userName.toLowerCase(),
+          _selectedSportTag!.toLowerCase(),
+        ],
+        'postId': postRef.id,
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

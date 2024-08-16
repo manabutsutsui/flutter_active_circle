@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import '../parts/ad_banner.dart'; // AdBanner imported
 
 class ProfileEdit extends StatefulWidget {
   const ProfileEdit({super.key});
@@ -121,95 +122,102 @@ class ProfileEditState extends State<ProfileEdit> {
                 fontWeight: FontWeight.bold,
               )),
         ),
-        body: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              Center(
-                child: GestureDetector(
-                  onTap: _uploadProfileImage,
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _profileImageUrl != null
-                        ? NetworkImage(_profileImageUrl!)
-                        : null,
-                    child: _profileImageUrl == null
-                        ? const Icon(Icons.add_a_photo, size: 40)
-                        : null,
-                  ),
+        body: Column(
+          children: [
+            const AdBanner(), // AdBanner added below the app bar
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.all(16.0),
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: _uploadProfileImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _profileImageUrl != null
+                              ? NetworkImage(_profileImageUrl!)
+                              : null,
+                          child: _profileImageUrl == null
+                              ? const Icon(Icons.add_a_photo, size: 40)
+                              : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    TextFormField(
+                      controller: _nicknameController,
+                      decoration: const InputDecoration(
+                        labelText: '名前（ニックネーム）',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '名前を入力してください';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bioController,
+                      decoration: const InputDecoration(
+                        labelText: '自己紹介',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _gender,
+                      decoration: const InputDecoration(
+                        labelText: '性別',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['未選択', '男性', '女性', 'その他']
+                          .map((label) => DropdownMenuItem(
+                        value: label,
+                        child: Text(label),
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _gender = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      title: const Text('生年月日'),
+                      subtitle: Text(_birthDate == null
+                          ? '未設定'
+                          : '${_birthDate!.year}年${_birthDate!.month}月${_birthDate!.day}日'),
+                      trailing: const Icon(Icons.calendar_today),
+                      onTap: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: _birthDate ?? DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (pickedDate != null) {
+                          setState(() {
+                            _birthDate = pickedDate;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _saveProfile,
+                      child: const Text('保存'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-              TextFormField(
-                controller: _nicknameController,
-                decoration: const InputDecoration(
-                  labelText: '名前（ニックネーム）',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '名前を入力してください';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: '自己紹介',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _gender,
-                decoration: const InputDecoration(
-                  labelText: '性別',
-                  border: OutlineInputBorder(),
-                ),
-                items: ['未選択', '男性', '女性', 'その他']
-                    .map((label) => DropdownMenuItem(
-                      value: label,
-                      child: Text(label),
-                    ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: const Text('生年月日'),
-                subtitle: Text(_birthDate == null
-                    ? '未設定'
-                    : '${_birthDate!.year}年${_birthDate!.month}月${_birthDate!.day}日'),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _birthDate ?? DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _birthDate = pickedDate;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _saveProfile,
-                child: const Text('保存'),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
+import '../parts/ad_banner.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> postData;
@@ -30,13 +31,14 @@ class PostDetailScreenState extends State<PostDetailScreen> {
   Future<void> _checkIfFollowing() async {
     if (currentUserId != null) {
       final followDoc = await FirebaseFirestore.instance
-          .collection('follows')
-          .where('followerId', isEqualTo: currentUserId)
-          .where('followingId', isEqualTo: widget.postData['userId'])
+          .collection('profiles')
+          .doc(currentUserId)
+          .collection('following')
+          .doc(widget.postData['userId'])
           .get();
 
       setState(() {
-        _isFollowing = followDoc.docs.isNotEmpty;
+        _isFollowing = followDoc.exists;
       });
     }
   }
@@ -49,24 +51,27 @@ class PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _checkLikeStatus() async {
     if (currentUserId != null) {
-      final likeDoc = await FirebaseFirestore.instance
+      final postRef = FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postData['postId']);
+
+      final likeDoc = await postRef
           .collection('likes')
-          .where('postId', isEqualTo: widget.postData['postId'])
-          .where('userId', isEqualTo: currentUserId)
+          .doc(currentUserId)
           .get();
 
       setState(() {
-        _isLiked = likeDoc.docs.isNotEmpty;
+        _isLiked = likeDoc.exists;
       });
     }
 
     final likeCountDoc = await FirebaseFirestore.instance
-        .collection('likes')
-        .where('postId', isEqualTo: widget.postData['postId'])
+        .collection('posts')
+        .doc(widget.postData['postId'])
         .get();
 
     setState(() {
-      _likeCount = likeCountDoc.docs.length;
+      _likeCount = likeCountDoc.data()?['likeCount'] ?? 0;
     });
   }
 
@@ -75,20 +80,36 @@ class PostDetailScreenState extends State<PostDetailScreen> {
 
     if (_isFollowing) {
       // フォロー解除
-      final followDoc = await FirebaseFirestore.instance
-          .collection('follows')
-          .where('followerId', isEqualTo: currentUserId)
-          .where('followingId', isEqualTo: widget.postData['userId'])
-          .get();
+      await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(currentUserId)
+          .collection('following')
+          .doc(widget.postData['userId'])
+          .delete();
 
-      for (var doc in followDoc.docs) {
-        await doc.reference.delete();
-      }
+      await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(widget.postData['userId'])
+          .collection('followers')
+          .doc(currentUserId)
+          .delete();
     } else {
       // フォロー
-      await FirebaseFirestore.instance.collection('follows').add({
-        'followerId': currentUserId,
-        'followingId': widget.postData['userId'],
+      await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(currentUserId)
+          .collection('following')
+          .doc(widget.postData['userId'])
+          .set({
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(widget.postData['userId'])
+          .collection('followers')
+          .doc(currentUserId)
+          .set({
         'timestamp': FieldValue.serverTimestamp(),
       });
 
@@ -116,31 +137,39 @@ class PostDetailScreenState extends State<PostDetailScreen> {
       return;
     }
 
-    if (_isLiked) {
-      // いいね解除
-      final likeDoc = await FirebaseFirestore.instance
-          .collection('likes')
-          .where('postId', isEqualTo: postId)
-          .where('userId', isEqualTo: currentUserId)
-          .get();
+    final postRef = FirebaseFirestore.instance.collection('posts').doc(postId);
 
-      for (var doc in likeDoc.docs) {
-        await doc.reference.delete();
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final postSnapshot = await transaction.get(postRef);
+
+      if (!postSnapshot.exists) {
+        throw Exception('Post does not exist!');
       }
-    } else {
-      // いいね
-      await FirebaseFirestore.instance.collection('likes').add({
-        'postId': postId,
-        'userId': currentUserId,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    }
+
+      final currentLikes = postSnapshot.data()?['likes'] as Map<String, dynamic>? ?? {};
+      final isLiked = currentLikes[currentUserId] == true;
+
+      if (isLiked) {
+        // いいね解除
+        currentLikes.remove(currentUserId);
+        transaction.update(postRef, {
+          'likes': currentLikes,
+          'likeCount': FieldValue.increment(-1),
+        });
+      } else {
+        // いいね
+        currentLikes[currentUserId!] = true; // null-assertionオペレーターを追加
+        transaction.update(postRef, {
+          'likes': currentLikes,
+          'likeCount': FieldValue.increment(1),
+        });
+      }
+    });
 
     setState(() {
       _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
     });
-
-    await _checkLikeStatus();
   }
 
   Future<String> _getUserProfileImageUrl(String userId) async {
@@ -153,9 +182,21 @@ class PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _deletePost() async {
     try {
+      final postId = widget.postData['postId'];
+      final userId = widget.postData['userId'];
+
+      // メインの posts コレクションから削除
       await FirebaseFirestore.instance
           .collection('posts')
-          .doc(widget.postData['postId'])
+          .doc(postId)
+          .delete();
+
+      // ユーザーの posts サブコレクションから削除
+      await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(userId)
+          .collection('posts')
+          .doc(postId)
           .delete();
 
       if (mounted) {
@@ -320,76 +361,82 @@ class PostDetailScreenState extends State<PostDetailScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                widget.postData['imageUrl'] ?? '',
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+      body: Column(
+        children: [
+          const AdBanner(),
+          Expanded(
+            child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.postData['title'] ?? '',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: _toggleLike,
-                            icon: Icon(
-                              _isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: _isLiked ? Colors.red : Colors.grey,
-                              size: 30,
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      widget.postData['imageUrl'] ?? '',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.postData['title'] ?? '',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24),
                             ),
-                          ),
-                          Text(
-                            '$_likeCount',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '投稿者: ${widget.postData['userName'] ?? ''}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.flag),
-                        onPressed: _showReportDialog,
-                      ),
-                    ],
-                  ),
-                  Text(
-                    widget.postData['content'] ?? '',
-                    style: const TextStyle(fontSize: 18),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: _toggleLike,
+                                  icon: Icon(
+                                    _isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: _isLiked ? Colors.red : Colors.grey,
+                                    size: 30,
+                                  ),
+                                ),
+                                Text(
+                                  '$_likeCount',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '投稿者: ${widget.postData['userName'] ?? ''}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.flag),
+                              onPressed: _showReportDialog,
+                            ),
+                          ],
+                        ),
+                        Text(
+                          widget.postData['content'] ?? '',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

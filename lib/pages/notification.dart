@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
+import '../parts/ad_banner.dart'; // AdBanner imported
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
@@ -19,64 +20,71 @@ class NotificationScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('通知', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('notifications')
-            .where('recipientId', isEqualTo: currentUser.uid)
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          const AdBanner(), // AdBanner added below the app bar
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('notifications')
+                  .where('recipientId', isEqualTo: currentUser.uid)
+                  .orderBy('createdAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
-          }
+                if (snapshot.hasError) {
+                  return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.notifications_off, size: 86, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('通知はありません', style: TextStyle(fontSize: 18)),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              final notification = snapshot.data!.docs[index];
-              final data = notification.data() as Map<String, dynamic>;
-
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(data['senderImageUrl'] ?? ''),
-                ),
-                title: Text(data['message']),
-                subtitle: Text(
-                  _formatTimestamp(data['createdAt'] as Timestamp),
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Profile(
-                        userId: data['senderId'],
-                        isCurrentUser: false,
-                      ),
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.notifications_off, size: 86, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('通知はありません', style: TextStyle(fontSize: 18)),
+                      ],
                     ),
                   );
-                },
-              );
-            },
-          );
-        },
+                }
+
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final notification = snapshot.data!.docs[index];
+                    final data = notification.data() as Map<String, dynamic>;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(data['senderImageUrl'] ?? ''),
+                      ),
+                      title: Text(data['message']),
+                      subtitle: Text(
+                        _formatTimestamp(data['createdAt'] as Timestamp),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Profile(
+                              userId: data['senderId'],
+                              isCurrentUser: false,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

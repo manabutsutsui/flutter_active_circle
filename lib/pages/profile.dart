@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../parts/app_drawer.dart';
+import '../parts/ad_banner.dart';
 import 'profile_edit.dart';
 import 'following.dart';
 import 'follower.dart';
@@ -55,21 +56,23 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     }
 
     // フォロー数を取得
-    final followingDocs = await FirebaseFirestore.instance
-        .collection('follows')
-        .where('followerId', isEqualTo: widget.userId)
+    final followingSnapshot = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(widget.userId)
+        .collection('following')
         .get();
     
     // フォロワー数を取得
-    final followerDocs = await FirebaseFirestore.instance
-        .collection('follows')
-        .where('followingId', isEqualTo: widget.userId)
+    final followerSnapshot = await FirebaseFirestore.instance
+        .collection('profiles')
+        .doc(widget.userId)
+        .collection('followers')
         .get();
 
     if (mounted) {
       setState(() {
-        _followingCount = followingDocs.docs.length;
-        _followerCount = followerDocs.docs.length;
+        _followingCount = followingSnapshot.docs.length;
+        _followerCount = followerSnapshot.docs.length;
       });
     }
   }
@@ -158,6 +161,7 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
       drawer: widget.isCurrentUser ? AppDrawer() : null,
       body: Column(
         children: [
+          const AdBanner(),
           const SizedBox(height: 20),
           _imageUrl.isNotEmpty
               ? CircleAvatar(
@@ -320,63 +324,43 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   Widget _buildLikesGrid() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('likes')
-          .where('userId', isEqualTo: widget.userId)
+          .collection('posts')
+          .where('likes.${widget.userId}', isEqualTo: true)
           .snapshots(),
-      builder: (context, likesSnapshot) {
-        if (likesSnapshot.connectionState == ConnectionState.waiting) {
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (!likesSnapshot.hasData || likesSnapshot.data!.docs.isEmpty) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const Center(child: Text('いいねした投稿がありません'));
         }
 
-        final likedPostIds = likesSnapshot.data!.docs
-            .map((doc) => doc['postId'] as String?)
-            .where((postId) => postId != null)
-            .cast<String>()
-            .toList();
-
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('posts')
-              .where(FieldPath.documentId, whereIn: likedPostIds)
-              .snapshots(),
-          builder: (context, postsSnapshot) {
-            if (postsSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!postsSnapshot.hasData || postsSnapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('いいねした投稿がありません'));
-            }
-            return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
-              ),
-              itemCount: postsSnapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final post = postsSnapshot.data!.docs[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PostDetailScreen(postData: post.data() as Map<String, dynamic>),
-                      ),
-                    );
-                  },
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      post['imageUrl'] ?? '',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 4,
+            mainAxisSpacing: 4,
+          ),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            final post = snapshot.data!.docs[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostDetailScreen(postData: post.data() as Map<String, dynamic>),
                   ),
                 );
               },
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  post['imageUrl'] ?? '',
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
             );
           },
         );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
+import '../parts/ad_banner.dart';
 
 class BlockList extends StatefulWidget {
   const BlockList({super.key});
@@ -33,78 +34,85 @@ class BlockListState extends State<BlockList> {
       appBar: AppBar(
         title: const Text('ブロックリスト', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('blocks')
-            .where('blockedBy', isEqualTo: currentUserId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          const AdBanner(),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('blocks')
+                  .where('blockedBy', isEqualTo: currentUserId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
-          }
+                if (snapshot.hasError) {
+                  return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_off, size: 86, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('ブロックしているユーザーはいません', style: TextStyle(fontSize: 18)),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              final blockData = snapshot.data!.docs[index];
-              final blockedUserId = blockData['blockedUser'] as String;
-
-              return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('profiles').doc(blockedUserId).get(),
-                builder: (context, profileSnapshot) {
-                  if (profileSnapshot.connectionState == ConnectionState.waiting) {
-                    return const ListTile(title: Text('読み込み中...'));
-                  }
-
-                  if (!profileSnapshot.hasData || !profileSnapshot.data!.exists) {
-                    return const ListTile(title: Text('ユーザー情報が見つかりません'));
-                  }
-
-                  final profileData = profileSnapshot.data!.data() as Map<String, dynamic>;
-                  final userName = profileData['nickName'] ?? '名前なし';
-                  final userImageUrl = profileData['profileImageUrl'] ?? '';
-
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: userImageUrl.isNotEmpty ? NetworkImage(userImageUrl) : null,
-                      child: userImageUrl.isEmpty ? const Icon(Icons.person) : null,
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_off, size: 86, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('ブロックしているユーザーはいません', style: TextStyle(fontSize: 18)),
+                      ],
                     ),
-                    title: Text(userName),
-                    trailing: ElevatedButton(
-                      onPressed: () => _unblockUser(blockData.id),
-                      child: const Text('ブロック解除'),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Profile(userId: blockedUserId, isCurrentUser: false),
-                        ),
-                      );
-                    },
                   );
-                },
-              );
-            },
-          );
-        },
+                }
+
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final blockData = snapshot.data!.docs[index];
+                    final blockedUserId = blockData['blockedUser'] as String;
+
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance.collection('profiles').doc(blockedUserId).get(),
+                      builder: (context, profileSnapshot) {
+                        if (profileSnapshot.connectionState == ConnectionState.waiting) {
+                          return const ListTile(title: Text('読み込み中...'));
+                        }
+
+                        if (!profileSnapshot.hasData || !profileSnapshot.data!.exists) {
+                          return const ListTile(title: Text('ユーザー情報が見つかりません'));
+                        }
+
+                        final profileData = profileSnapshot.data!.data() as Map<String, dynamic>;
+                        final userName = profileData['nickName'] ?? '名前なし';
+                        final userImageUrl = profileData['profileImageUrl'] ?? '';
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: userImageUrl.isNotEmpty ? NetworkImage(userImageUrl) : null,
+                            child: userImageUrl.isEmpty ? const Icon(Icons.person) : null,
+                          ),
+                          title: Text(userName),
+                          trailing: ElevatedButton(
+                            onPressed: () => _unblockUser(blockData.id),
+                            child: const Text('ブロック解除'),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Profile(userId: blockedUserId, isCurrentUser: false),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../parts/ad_banner.dart'; // AdBanner imported
 
 class ProfileDetail extends StatefulWidget {
   final String userId;
@@ -48,27 +49,34 @@ class ProfileDetailState extends State<ProfileDetail> {
               fontWeight: FontWeight.bold,
             )),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
+      body: Column(
         children: [
-          Center(
-            child: CircleAvatar(
-              radius: 50,
-              backgroundImage: _profileImageUrl != null
-                  ? NetworkImage(_profileImageUrl!)
-                  : null,
-              child: _profileImageUrl == null
-                  ? const Icon(Icons.person, size: 50)
-                  : null,
+          const AdBanner(), // AdBanner added below the app bar
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                Center(
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _profileImageUrl != null
+                        ? NetworkImage(_profileImageUrl!)
+                        : null,
+                    child: _profileImageUrl == null
+                        ? const Icon(Icons.person, size: 50)
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildInfoTile('名前', _nickname),
+                _buildInfoTile('自己紹介', _bio),
+                _buildInfoTile('性別', _gender),
+                _buildInfoTile('生年月日', _birthDate == null
+                    ? '未設定'
+                    : '${_birthDate!.year}年${_birthDate!.month}月${_birthDate!.day}日'),
+              ],
             ),
           ),
-          const SizedBox(height: 32),
-          _buildInfoTile('名前', _nickname),
-          _buildInfoTile('自己紹介', _bio),
-          _buildInfoTile('性別', _gender),
-          _buildInfoTile('生年月日', _birthDate == null
-              ? '未設定'
-              : '${_birthDate!.year}年${_birthDate!.month}月${_birthDate!.day}日'),
         ],
       ),
     );
