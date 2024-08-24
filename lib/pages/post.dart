@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'home.dart';
 
 class PostPage extends StatefulWidget {
@@ -38,6 +39,39 @@ class PostPageState extends State<PostPage> {
     'その他',
   ];
 
+  Future<String?> _uploadImage(File image) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // 画像を圧縮
+        final bytes = await image.readAsBytes();
+        final compressedImage = await FlutterImageCompress.compressWithList(
+          bytes,
+          minWidth: 500,
+          minHeight: 500,
+          quality: 85,
+          format: CompressFormat.jpeg,
+        );
+
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('post_images')
+            .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+        
+        await storageRef.putData(compressedImage, SettableMetadata(contentType: 'image/jpeg'));
+        final imageUrl = await storageRef.getDownloadURL();
+        
+        return imageUrl;
+      }
+    } catch (e) {
+      print('画像のアップロードに失敗しました: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('画像のアップロードに失敗しました。')),
+      );
+    }
+    return null;
+  }
+
   Future<void> _post() async {
     if (_titleController.text.isEmpty ||
         _contentController.text.isEmpty ||
@@ -66,12 +100,10 @@ class PostPageState extends State<PostPage> {
       final userName = userProfile.data()?['nickName'] ?? '名無し';
       final userImageUrl = userProfile.data()?['profileImageUrl'] ?? '';
 
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('post_images')
-          .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-      await storageRef.putFile(_image!);
-      final imageUrl = await storageRef.getDownloadURL();
+      final imageUrl = await _uploadImage(_image!);
+      if (imageUrl == null) {
+        throw Exception('画像のアップロードに失敗しました');
+      }
 
       final userRef = FirebaseFirestore.instance.collection('profiles').doc(user.uid);
       final postRef = userRef.collection('posts').doc();
@@ -132,14 +164,22 @@ class PostPageState extends State<PostPage> {
     }
   }
 
-  Future getImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
+  Future getImage(ImageSource source) async {
+    try {
+        final pickedFile = await picker.pickImage(source: source);
+        if (pickedFile != null) {
+            setState(() {
+                _image = File(pickedFile.path);
+            });
+        } else {
+            throw Exception('画像が選択されませんでした');
+        }
+    } catch (e) {
+        print('画像の取得に失敗しました: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('画像の取得に失敗しました。')),
+        );
+    }
   }
 
   @override
@@ -221,10 +261,21 @@ class PostPageState extends State<PostPage> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: getImage,
-          tooltip: '写真を撮る',
-          child: const Icon(Icons.camera_alt),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () => getImage(ImageSource.camera),
+              tooltip: '写真を撮る',
+              child: const Icon(Icons.camera_alt),
+            ),
+            const SizedBox(width: 8),
+            FloatingActionButton(
+              onPressed: () => getImage(ImageSource.gallery),
+              tooltip: 'ギャラリーから選択',
+              child: const Icon(Icons.photo_library),
+            ),
+          ],
         ),
       ),
     );

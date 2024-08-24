@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '2.0.0' // 安定したバージョンに変更
+    ext.kotlin_version = '1.9.20' // 最新のKotlinバージョンに更新
     repositories {
         google()
         mavenCentral()
@@ -7,7 +7,6 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:4.2.2'
-        // 他の依存関係
     }
 }
 

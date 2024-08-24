@@ -38,9 +38,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>カメラへのアクセスが必要です</string>
+	<string>ActiveCircleはあなたのスポーツ活動の写真を投稿するためにカメラへのアクセスを必要とします。撮影した写真は、あなたの承認後にのみアプリ内で共有されます。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>プロフィール写真の選択のために、写真へのアクセスが必要です。</string>
+	<string>ActiveCircleはあなたのスポーツ活動の写真を投稿するためにフォトライブラリへのアクセスを必要とします。選択した写真は、あなたの承認後にのみアプリ内で共有されます。</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>NSPhotoLibraryAddUsageDescription</key>

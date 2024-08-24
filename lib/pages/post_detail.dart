@@ -63,16 +63,13 @@ class PostDetailScreenState extends State<PostDetailScreen> {
       setState(() {
         _isLiked = likeDoc.exists;
       });
+
+      final likeCountDoc = await postRef.get();
+
+      setState(() {
+        _likeCount = likeCountDoc.data()?['likeCount'] ?? 0;
+      });
     }
-
-    final likeCountDoc = await FirebaseFirestore.instance
-        .collection('posts')
-        .doc(widget.postData['postId'])
-        .get();
-
-    setState(() {
-      _likeCount = likeCountDoc.data()?['likeCount'] ?? 0;
-    });
   }
 
   Future<void> _toggleFollow() async {
@@ -156,16 +153,19 @@ class PostDetailScreenState extends State<PostDetailScreen> {
           'likes': currentLikes,
           'likeCount': FieldValue.increment(-1),
         });
+        await postRef.collection('likes').doc(currentUserId).delete();
       } else {
         // いいね
-        currentLikes[currentUserId!] = true; // null-assertionオペレーターを追加
+        currentLikes[currentUserId!] = true;
         transaction.update(postRef, {
           'likes': currentLikes,
           'likeCount': FieldValue.increment(1),
         });
+        await postRef.collection('likes').doc(currentUserId).set({});
       }
     });
 
+    // 状態を更新
     setState(() {
       _isLiked = !_isLiked;
       _likeCount += _isLiked ? 1 : -1;

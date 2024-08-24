@@ -89,16 +89,21 @@ class ProfileEditState extends State<ProfileEdit> {
     if (_formKey.currentState!.validate()) {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('profiles')
-            .doc(user.uid)
-            .update({
+        final updatedData = {
           'nickName': _nicknameController.text,
           'bio': _bioController.text,
           'gender': _gender,
           'birthDate': _birthDate,
           'profileImageUrl': _profileImageUrl,
-        });
+        };
+
+        await FirebaseFirestore.instance
+            .collection('profiles')
+            .doc(user.uid)
+            .update(updatedData);
+
+        await _updateUserPosts(user.uid, updatedData);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('プロフィールを更新しました')),
@@ -107,6 +112,25 @@ class ProfileEditState extends State<ProfileEdit> {
         }
       }
     }
+  }
+
+  Future<void> _updateUserPosts(String userId, Map<String, dynamic> updatedData) async {
+    final postsQuery = FirebaseFirestore.instance
+        .collection('posts')
+        .where('userId', isEqualTo: userId);
+
+    final querySnapshot = await postsQuery.get();
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    for (var doc in querySnapshot.docs) {
+      batch.update(doc.reference, {
+        'userName': updatedData['nickName'],
+        'userImageUrl': updatedData['profileImageUrl'],
+      });
+    }
+
+    await batch.commit();
   }
 
   @override
