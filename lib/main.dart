@@ -5,7 +5,9 @@ import 'firebase_options.dart';
 import 'utils/config.dart';
 import 'parts/base.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'pages/create_account.dart';
+import 'pages/login.dart';
+import 'pages/create_nickname.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +62,26 @@ class SplashScreenState extends State<SplashScreen>
     });
   }
 
+  Future<void> _handleIncomingLinks() async {
+    if (await FirebaseAuth.instance.isSignInWithEmailLink(Uri.base.toString())) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userCredential = await FirebaseAuth.instance.signInWithEmailLink(
+          email: prefs.getString('emailForSignIn') ?? '',
+          emailLink: Uri.base.toString(),
+        );
+
+        if (userCredential.user != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const CreateNickname()),
+          );
+        }
+      } catch (e) {
+        print('Error signing in with email link: $e');
+      }
+    }
+  }
+
   void _checkAuthAndNavigate() {
     if (FirebaseAuth.instance.currentUser != null) {
       Navigator.of(context).pushReplacement(
@@ -67,7 +89,7 @@ class SplashScreenState extends State<SplashScreen>
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const CreateAccount()),
+        MaterialPageRoute(builder: (context) => const Login()),
       );
     }
   }

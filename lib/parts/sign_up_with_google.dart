@@ -5,8 +5,13 @@ import 'package:sign_in_button/sign_in_button.dart';
 
 class SignUpWithGoogle extends StatefulWidget {
   final Function(BuildContext, String) onSignInComplete;
+  final String buttonText;
 
-  const SignUpWithGoogle({super.key, required this.onSignInComplete});
+  const SignUpWithGoogle({
+    super.key,
+    required this.onSignInComplete,
+    this.buttonText = 'Googleでサインイン',
+  });
 
   @override
   SignUpWithGoogleState createState() => SignUpWithGoogleState();
@@ -17,7 +22,7 @@ class SignUpWithGoogleState extends State<SignUpWithGoogle> {
   Widget build(BuildContext context) {
     return SignInButton(
       Buttons.googleDark,
-      text: "Googleでアカウント作成",
+      text: widget.buttonText,
       onPressed: () async {
         try {
           final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();

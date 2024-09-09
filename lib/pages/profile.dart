@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../parts/app_drawer.dart';
-import '../parts/ad_banner.dart';
 import 'profile_edit.dart';
 import 'following.dart';
 import 'follower.dart';
@@ -161,7 +160,6 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
       drawer: widget.isCurrentUser ? AppDrawer() : null,
       body: Column(
         children: [
-          const AdBanner(),
           const SizedBox(height: 20),
           _imageUrl.isNotEmpty
               ? CircleAvatar(
@@ -325,7 +323,7 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('posts')
-          .where('likes.${widget.userId}', isEqualTo: true)
+          .where('likes', arrayContains: widget.userId)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

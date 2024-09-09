@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'profile.dart';
-import '../parts/ad_banner.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> postData;
@@ -361,82 +360,75 @@ class PostDetailScreenState extends State<PostDetailScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          const AdBanner(),
-          Expanded(
-            child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Image.network(
+                widget.postData['imageUrl'] ?? '',
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      widget.postData['imageUrl'] ?? '',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.postData['title'] ?? '',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: _toggleLike,
+                            icon: Icon(
+                              _isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: _isLiked ? Colors.red : Colors.grey,
+                              size: 30,
+                            ),
+                          ),
+                          Text(
+                            '$_likeCount',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              widget.postData['title'] ?? '',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 24),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                IconButton(
-                                  onPressed: _toggleLike,
-                                  icon: Icon(
-                                    _isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: _isLiked ? Colors.red : Colors.grey,
-                                    size: 30,
-                                  ),
-                                ),
-                                Text(
-                                  '$_likeCount',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 18),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '投稿者: ${widget.postData['userName'] ?? ''}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.flag),
-                              onPressed: _showReportDialog,
-                            ),
-                          ],
-                        ),
-                        Text(
-                          widget.postData['content'] ?? '',
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '投稿者: ${widget.postData['userName'] ?? ''}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.flag),
+                        onPressed: _showReportDialog,
+                      ),
+                    ],
+                  ),
+                  Text(
+                    widget.postData['content'] ?? '',
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

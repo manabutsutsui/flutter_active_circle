@@ -55,7 +55,7 @@ dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon.png"
+  image_path: "assets/icon/icon_active_circle.png"
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import '../pages/create_account.dart';
+import '../pages/login.dart';
 import '../parts/base.dart';
 import '../pages/block_list.dart';
 
@@ -213,7 +213,7 @@ class AppDrawer extends StatelessWidget {
                       baseState?.setShowBottomNavigationBar(false);
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const CreateAccount()),
+                        MaterialPageRoute(builder: (context) => const Login()),
                       );
                     }
                   }
@@ -269,7 +269,7 @@ class AppDrawer extends StatelessWidget {
                       baseState?.setShowBottomNavigationBar(false);
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const CreateAccount()),
+                        MaterialPageRoute(builder: (context) => const Login()),
                       );
                 }
               },

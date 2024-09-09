@@ -5,8 +5,13 @@ import 'package:sign_in_button/sign_in_button.dart';
 
 class SignUpWithApple extends StatefulWidget {
   final Function(BuildContext, String) onSignInComplete;
+  final String buttonText;
 
-  const SignUpWithApple({super.key, required this.onSignInComplete});
+  const SignUpWithApple({
+    super.key,
+    required this.onSignInComplete,
+    this.buttonText = 'Appleでサインイン',
+  });
 
   @override
   SignUpWithAppleState createState() => SignUpWithAppleState();
@@ -17,7 +22,7 @@ class SignUpWithAppleState extends State<SignUpWithApple> {
   Widget build(BuildContext context) {
     return SignInButton(
       Buttons.appleDark,
-      text: "Appleでアカウント作成",
+      text: widget.buttonText,
       onPressed: () async {
         try {
           final appleCredential = await SignInWithApple.getAppleIDCredential(
