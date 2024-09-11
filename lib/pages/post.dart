@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,6 +39,8 @@ class PostPageState extends State<PostPage> {
     '卓球',
     'その他',
   ];
+
+  int _selectedIndex = 0;
 
   Future<String?> _uploadImage(File image) async {
     try {
@@ -182,6 +185,53 @@ class PostPageState extends State<PostPage> {
     }
   }
 
+  void _showSportTagPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 300,
+          child: Column(
+            children: [
+              Container(
+                color: Colors.grey[200],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      child: const Text('キャンセル'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    CupertinoButton(
+                      child: const Text('完了'),
+                      onPressed: () {
+                        setState(() {
+                          _selectedSportTag = _sportTags[_selectedIndex];
+                        });
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  onSelectedItemChanged: (int index) {
+                    _selectedIndex = index;
+                  },
+                  children: _sportTags.map((String tag) {
+                    return Center(child: Text(tag));
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -190,7 +240,7 @@ class PostPageState extends State<PostPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('投稿', style: TextStyle(fontWeight: FontWeight.bold),),
+          title: const Text('投稿', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -212,6 +262,7 @@ class PostPageState extends State<PostPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextField(
                       controller: _titleController,
@@ -230,30 +281,31 @@ class PostPageState extends State<PostPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedSportTag,
-                      decoration: const InputDecoration(
-                        labelText: 'スポーツタグ',
-                        border: OutlineInputBorder(),
+                    InkWell(
+                      onTap: _showSportTagPicker,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(_selectedSportTag ?? 'スポーツタグ'),
+                            const Icon(Icons.arrow_drop_down),
+                          ],
+                        ),
                       ),
-                      items: _sportTags.map((String tag) {
-                        return DropdownMenuItem<String>(
-                          value: tag,
-                          child: Text(tag),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedSportTag = newValue;
-                        });
-                      },
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _isPosting ? null : _post,
-                      child: _isPosting
-                          ? const CircularProgressIndicator()
-                          : const Text('投稿'),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _isPosting ? null : _post,
+                        child: _isPosting
+                            ? const CircularProgressIndicator()
+                            : const Text('投稿'),
+                      ),
                     ),
                   ],
                 ),

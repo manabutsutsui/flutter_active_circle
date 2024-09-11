@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../services/follow_service.dart';
+import '../services/report_service.dart';
 import 'profile.dart';
+import '../utils/date_formatter.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final Map<String, dynamic> postData;
@@ -54,71 +57,19 @@ class PostDetailScreenState extends State<PostDetailScreen> {
           .collection('posts')
           .doc(widget.postData['postId']);
 
-      final likeDoc = await postRef
-          .collection('likes')
-          .doc(currentUserId)
-          .get();
+      final postDoc = await postRef.get();
+      final likes = List<String>.from(postDoc.data()?['likes'] ?? []);
 
       setState(() {
-        _isLiked = likeDoc.exists;
-      });
-
-      final likeCountDoc = await postRef.get();
-
-      setState(() {
-        _likeCount = likeCountDoc.data()?['likeCount'] ?? 0;
+        _isLiked = likes.contains(currentUserId);
+        _likeCount = likes.length;
       });
     }
   }
 
   Future<void> _toggleFollow() async {
     if (currentUserId == null) return;
-
-    if (_isFollowing) {
-      // フォロー解除
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(currentUserId)
-          .collection('following')
-          .doc(widget.postData['userId'])
-          .delete();
-
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(widget.postData['userId'])
-          .collection('followers')
-          .doc(currentUserId)
-          .delete();
-    } else {
-      // フォロー
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(currentUserId)
-          .collection('following')
-          .doc(widget.postData['userId'])
-          .set({
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      await FirebaseFirestore.instance
-          .collection('profiles')
-          .doc(widget.postData['userId'])
-          .collection('followers')
-          .doc(currentUserId)
-          .set({
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      // 通知を作成
-      await FirebaseFirestore.instance.collection('notifications').add({
-        'senderId': currentUserId,
-        'senderImageUrl': await _getUserProfileImageUrl(currentUserId!),
-        'recipientId': widget.postData['userId'],
-        'message': 'あなたをフォローしました',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    }
-
+    await FollowService.toggleFollow(widget.postData['userId']);
     setState(() {
       _isFollowing = !_isFollowing;
     });
@@ -142,26 +93,21 @@ class PostDetailScreenState extends State<PostDetailScreen> {
         throw Exception('Post does not exist!');
       }
 
-      final currentLikes = postSnapshot.data()?['likes'] as Map<String, dynamic>? ?? {};
-      final isLiked = currentLikes[currentUserId] == true;
+      final currentLikes = List<String>.from(postSnapshot.data()?['likes'] ?? []);
+      final isLiked = currentLikes.contains(currentUserId);
 
       if (isLiked) {
         // いいね解除
         currentLikes.remove(currentUserId);
-        transaction.update(postRef, {
-          'likes': currentLikes,
-          'likeCount': FieldValue.increment(-1),
-        });
-        await postRef.collection('likes').doc(currentUserId).delete();
       } else {
         // いいね
-        currentLikes[currentUserId!] = true;
-        transaction.update(postRef, {
-          'likes': currentLikes,
-          'likeCount': FieldValue.increment(1),
-        });
-        await postRef.collection('likes').doc(currentUserId).set({});
+        currentLikes.add(currentUserId!);
       }
+
+      transaction.update(postRef, {
+        'likes': currentLikes,
+        'likeCount': currentLikes.length,
+      });
     });
 
     // 状態を更新
@@ -171,7 +117,7 @@ class PostDetailScreenState extends State<PostDetailScreen> {
     });
   }
 
-  Future<String> _getUserProfileImageUrl(String userId) async {
+  Future<String> getUserProfileImageUrl(String userId) async {
     final userDoc = await FirebaseFirestore.instance
         .collection('profiles')
         .doc(userId)
@@ -214,71 +160,32 @@ class PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void _showReportDialog() {
-    String reportReason = '';
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('投稿を報告'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('報告理由を記入してください：'),
-              const SizedBox(height: 16),
-              TextField(
-                maxLines: 3,
-                onChanged: (value) {
-                  reportReason = value;
-                },
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: '報告理由を入力',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (reportReason.isNotEmpty) {
-                  _reportPost(reportReason);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('報告する'),
-            ),
-          ],
-        );
-      },
-    );
+    ReportService.showReportDialog(context, _reportPost);
   }
 
   Future<void> _reportPost(String reason) async {
-    if (currentUserId == null) return;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
 
     try {
-      await FirebaseFirestore.instance.collection('reports').add({
-        'postId': widget.postData['postId'],
-        'reporterId': currentUserId,
-        'reportedUserId': widget.postData['userId'],
-        'reason': reason,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('投稿を報告しました')),
+      await ReportService.reportPost(
+        postId: widget.postData['postId'] ?? '',
+        reporterId: userId,
+        reportedUserId: widget.postData['userId'] ?? '',
+        reason: reason,
       );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('投稿を報告しました')),
+        );
+      }
     } catch (e) {
-      print('Error reporting post: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('投稿の報告に失敗しました')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('投稿の報告に失敗しました')),
+        );
+      }
     }
   }
 
@@ -411,7 +318,7 @@ class PostDetailScreenState extends State<PostDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '投稿者: ${widget.postData['userName'] ?? ''}',
+                        '投稿者: ${widget.postData['userName'] ?? ''} ${DateFormatter.formatDate(widget.postData['createdAt'])}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       IconButton(

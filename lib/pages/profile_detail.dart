@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/block_service.dart';
 
 class ProfileDetail extends StatefulWidget {
   final String userId;
@@ -39,6 +40,13 @@ class ProfileDetailState extends State<ProfileDetail> {
     }
   }
 
+  Future<void> _blockUser() async {
+    await BlockService.blockUser(widget.userId);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ユーザーをブロックしました')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,6 +55,12 @@ class ProfileDetailState extends State<ProfileDetail> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
             )),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.block),
+            onPressed: _blockUser,
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),

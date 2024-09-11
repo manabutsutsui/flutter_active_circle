@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +21,9 @@ class ProfileEditState extends State<ProfileEdit> {
   DateTime? _birthDate;
   String? _profileImageUrl;
 
+  final List<String> _genderOptions = ['未選択', '男性', '女性', 'その他'];
+  int _selectedGenderIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +42,7 @@ class ProfileEditState extends State<ProfileEdit> {
           _nicknameController.text = doc.data()?['nickName'] ?? '';
           _bioController.text = doc.data()?['bio'] ?? '';
           _gender = doc.data()?['gender'] ?? '未選択';
+          _selectedGenderIndex = _genderOptions.indexOf(_gender);
           _birthDate = doc.data()?['birthDate']?.toDate();
           _profileImageUrl = doc.data()?['profileImageUrl'];
         });
@@ -132,6 +137,53 @@ class ProfileEditState extends State<ProfileEdit> {
     await batch.commit();
   }
 
+  void _showGenderPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 300,
+          child: Column(
+            children: [
+              Container(
+                color: Colors.grey[200],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      child: const Text('キャンセル'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    CupertinoButton(
+                      child: const Text('完了'),
+                      onPressed: () {
+                        setState(() {
+                          _gender = _genderOptions[_selectedGenderIndex];
+                        });
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  onSelectedItemChanged: (int index) {
+                    _selectedGenderIndex = index;
+                  },
+                  children: _genderOptions.map((String gender) {
+                    return Center(child: Text(gender));
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -188,23 +240,21 @@ class ProfileEditState extends State<ProfileEdit> {
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _gender,
-                decoration: const InputDecoration(
-                  labelText: '性別',
-                  border: OutlineInputBorder(),
+              InkWell(
+                onTap: _showGenderPicker,
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: '性別',
+                    border: OutlineInputBorder(),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_gender),
+                      const Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
                 ),
-                items: ['未選択', '男性', '女性', 'その他']
-                    .map((label) => DropdownMenuItem(
-                  value: label,
-                  child: Text(label),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value!;
-                  });
-                },
               ),
               const SizedBox(height: 16),
               ListTile(

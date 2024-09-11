@@ -7,6 +7,7 @@ import 'following.dart';
 import 'follower.dart';
 import 'profile_detail.dart';
 import 'post_detail.dart';
+import '../services/follow_service.dart';
 
 class Profile extends StatefulWidget {
   final String userId;
@@ -28,11 +29,13 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
   int _followingCount = 0;
   int _followerCount = 0;
   late TabController _tabController;
+  bool _isFollowing = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _checkFollowStatus();
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -98,63 +101,52 @@ class ProfileState extends State<Profile> with SingleTickerProviderStateMixin {
     }
   }
 
-  void _showBlockDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('ユーザーをブロック'),
-          content: const Text('このユーザーをブロックしますか？'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('キャンセル'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('ブロック', style: TextStyle(color: Colors.red)),
-              onPressed: () async {
-                final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-                if (currentUserId != null) {
-                  await FirebaseFirestore.instance.collection('blocks').add({
-                    'blockedBy': currentUserId,
-                    'blockedUser': widget.userId,
-                    'createdAt': FieldValue.serverTimestamp(),
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('ユーザーをブロックしました')),
-                  );
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _checkFollowStatus() async {
+    if (!widget.isCurrentUser) {
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUserId != null) {
+        final isFollowing = await FollowService.isFollowing(currentUserId, widget.userId);
+        setState(() {
+          _isFollowing = isFollowing;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    await FollowService.toggleFollow(widget.userId);
+    await _checkFollowStatus();
+    await _loadProfileData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ActiveCircle',
+        title: widget.isCurrentUser ? const Text('ActiveCircle',
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
               color: Colors.blue,
               fontFamily: 'Pacifico',
-            )),
+            )) : null,
         actions: widget.isCurrentUser
             ? null
             : [
-                IconButton(
-                  icon: const Icon(Icons.block),
-                  onPressed: () {
-                    _showBlockDialog();
-                  },
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: _toggleFollow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isFollowing ? Colors.grey : Colors.blue,
+                    ),
+                    child: Text(
+                      _isFollowing ? 'フォロー中' : 'フォロー',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 20),
               ],
       ),
       drawer: widget.isCurrentUser ? AppDrawer() : null,

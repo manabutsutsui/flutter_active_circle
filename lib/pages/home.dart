@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'post_detail.dart';
+import '../services/block_service.dart';
+import '../services/report_service.dart'; 
+import '../utils/date_formatter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -81,19 +84,14 @@ class HomeScreenState extends State<HomeScreen> {
                   return const Center(child: Text('ログインしてください'));
                 }
                 
-                return FutureBuilder<QuerySnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('blocks')
-                      .where('blockedBy', isEqualTo: currentUserId)
-                      .get(),
+                return FutureBuilder<List<String>>(
+                  future: BlockService.getBlockedUserIds(),
                   builder: (context, blockSnapshot) {
                     if (blockSnapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
                 
-                    final blockedUserIds = blockSnapshot.data?.docs
-                        .map((doc) => doc['blockedUser'] as String)
-                        .toList() ?? [];
+                    final blockedUserIds = blockSnapshot.data ?? [];
                 
                     final filteredPosts = snapshot.data!.docs
                         .where((doc) => !blockedUserIds.contains(doc['userId']))
@@ -149,13 +147,60 @@ class HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            '投稿者: ${data['userName'] ?? ''}',
+                                            '投稿者: ${data['userName'] ?? ''} ${DateFormatter.formatDate(data['createdAt'])}',
                                             style: const TextStyle(
                                               fontSize: 12,
                                             ),
                                           ),
                                         ],
                                       ),
+                                    ),
+                                    PopupMenuButton<String>(
+                                      icon: const Icon(Icons.more_vert),
+                                      onSelected: (String result) async {
+                                        switch (result) {
+                                          case '報告':
+                                            ReportService.showReportDialog(context, (reason) async {
+                                              final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                                              if (currentUserId != null) {
+                                                try {
+                                                  await ReportService.reportPost(
+                                                    postId: post.id,
+                                                    reporterId: currentUserId,
+                                                    reportedUserId: data['userId'] ?? '',
+                                                    reason: reason,
+                                                  );
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('投稿を報告しました')),
+                                                  );
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('投稿の報告に失敗しました')),
+                                                  );
+                                                }
+                                              }
+                                            });
+                                            break;
+                                          case 'ブロック':
+                                            await BlockService.blockUser(data['userId']);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('ユーザーをブロックしました')),
+                                            );
+                                            break;
+                                        }
+                                      },
+                                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: '報告',
+                                          height: 24,
+                                          child: Text('報告', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'ブロック',
+                                          height: 24,
+                                          child: Text('ブロック', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -270,13 +315,60 @@ class HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            '投稿者: ${data['userName'] ?? ''}',
+                                            '投稿者: ${data['userName'] ?? ''} ${DateFormatter.formatDate(data['createdAt'])}',
                                             style: const TextStyle(
                                               fontSize: 12,
                                             ),
                                           ),
                                         ],
                                       ),
+                                    ),
+                                    PopupMenuButton<String>(
+                                      icon: const Icon(Icons.more_vert),
+                                      onSelected: (String result) async {
+                                        switch (result) {
+                                          case '報告':
+                                            ReportService.showReportDialog(context, (reason) async {
+                                              final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                                              if (currentUserId != null) {
+                                                try {
+                                                  await ReportService.reportPost(
+                                                    postId: post.id,
+                                                    reporterId: currentUserId,
+                                                    reportedUserId: data['userId'] ?? '',
+                                                    reason: reason,
+                                                  );
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('投稿を報告しました')),
+                                                  );
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('投稿の報告に失敗しました')),
+                                                  );
+                                                }
+                                              }
+                                            });
+                                            break;
+                                          case 'ブロック':
+                                            await BlockService.blockUser(data['userId']);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('ユーザーをブロックしました')),
+                                            );
+                                            break;
+                                        }
+                                      },
+                                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: '報告',
+                                          height: 24,
+                                          child: Text('報告', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'ブロック',
+                                          height: 24,
+                                          child: Text('ブロック', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
