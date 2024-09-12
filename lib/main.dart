@@ -6,9 +6,11 @@ import 'utils/config.dart';
 import 'parts/base.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'pages/login.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

@@ -6,6 +6,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../pages/login.dart';
 import '../parts/base.dart';
 import '../pages/block_list.dart';
+import '../pages/my_posts.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 class AppDrawer extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -153,7 +155,7 @@ class AppDrawer extends StatelessWidget {
                   fontFamily: 'Pacifico'),
             ),
           ),
-          if (_auth.currentUser != null)
+          if (_auth.currentUser != null) ...[
             ListTile(
               title: const Text('ブロックリスト'),
               leading: const Icon(Icons.block),
@@ -164,12 +166,27 @@ class AppDrawer extends StatelessWidget {
                 );
               },
             ),
+            ListTile(
+              title: const Text('レビューする'),
+              leading: const Icon(Icons.rate_review),
+              onTap: () {
+                _launchReview();
+              },
+            ),
+            ListTile(
+              title: const Text('投稿を編集'),
+              leading: const Icon(Icons.edit),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyPosts()),
+                );
+              },
+            ),
+          ],
           if (_auth.currentUser != null)
             ListTile(
-              title: const Text(
-                'ログアウト',
-                style: TextStyle(color: Colors.red),
-              ),
+              title: const Text('ログアウト', style: TextStyle(color: Colors.red)),
               leading: const Icon(
                 Icons.exit_to_app,
                 color: Colors.red,
@@ -277,5 +294,12 @@ class AppDrawer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _launchReview() async {
+    final InAppReview inAppReview = InAppReview.instance;
+    if (await inAppReview.isAvailable()) {
+      inAppReview.requestReview();
+    }
   }
 }
