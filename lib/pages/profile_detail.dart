@@ -54,7 +54,10 @@ class ProfileDetailState extends State<ProfileDetail> {
         title: const Text('プロフィール詳細',
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 16,
             )),
+        backgroundColor: Colors.blue,
         actions: [
           IconButton(
             icon: const Icon(Icons.block),

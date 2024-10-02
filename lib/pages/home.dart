@@ -37,6 +37,7 @@ class HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   'おすすめ',
                   style: TextStyle(fontWeight: FontWeight.bold),
+                  
                 ),
               ),
               Tab(

@@ -230,7 +230,7 @@ class AppDrawer extends StatelessWidget {
                       baseState?.setShowBottomNavigationBar(false);
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const Login()),
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
                       );
                     }
                   }
@@ -286,7 +286,7 @@ class AppDrawer extends StatelessWidget {
                       baseState?.setShowBottomNavigationBar(false);
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const Login()),
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
                       );
                 }
               },

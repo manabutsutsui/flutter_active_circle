@@ -18,7 +18,8 @@ class MyPostsState extends State<MyPosts> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('投稿一覧', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('投稿一覧', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
       body: user == null
           ? const Center(child: Text('ログインしていません'))

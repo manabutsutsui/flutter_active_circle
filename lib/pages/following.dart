@@ -27,7 +27,8 @@ class FollowingState extends State<Following> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('フォロー中', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text('フォロー中', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

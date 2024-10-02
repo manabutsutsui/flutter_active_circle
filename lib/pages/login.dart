@@ -1,31 +1,48 @@
 import 'package:flutter/material.dart';
-import '../parts/sign_up_with_google.dart';
-import '../parts/sign_up_with_apple.dart';
-import 'package:flutter/gestures.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../parts/base.dart';
-import 'create_nickname.dart';
-import '../parts/term_of_service.dart';
-import '../parts/privacy_policy.dart';
-import 'create_account.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
+import 'create_account.dart';
+import 'password_reset.dart';
+import '../parts/base.dart';
 
-class Login extends StatelessWidget {
-  const Login({super.key});
+class LoginPage extends StatefulWidget {
 
-  Future<void> _onSignInComplete(BuildContext context, String userId) async {
-    DocumentSnapshot userProfile = await FirebaseFirestore.instance
-        .collection('profiles')
-        .doc(userId)
-        .get();
+  const LoginPage({super.key});
 
-    if (userProfile.exists) {
+  @override
+  LoginPageState createState() => LoginPageState();
+}
+
+class LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _showVerificationMessage = false;
+
+  Future<void> _login() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('メールアドレスの認証が完了していません。認証メールのリンクをクリックしてください。')),
+        );
+        await FirebaseAuth.instance.signOut();
+        return;
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ログインに成功しました')),
+      );
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const Base()),
       );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const CreateNickname()),
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ログインに失敗しました: ${e.message}')),
       );
     }
   }
@@ -33,156 +50,104 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('ログイン', style: TextStyle(fontWeight: FontWeight.bold),),
-        automaticallyImplyLeading: false,
+        title: const Text('ログイン', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              EmailPasswordLogin(onSignInComplete: _onSignInComplete),
-              const SizedBox(height: 8),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 14, color: Colors.black),
-                  children: [
-                    const TextSpan(text: ''),
-                    TextSpan(
-                      text: '利用規約',
-                      style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()..onTap = () => showTermsOfService(context),
-                    ),
-                    const TextSpan(text: '及び'),
-                    TextSpan(
-                      text: 'プライバシーポリシー',
-                      style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()..onTap = () => showPrivacyPolicy(context),
-                    ),
-                    const TextSpan(text: 'に同意の上、\nアカウントを作成して下さい。'),
-                  ],
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'メールアドレス',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 24),
-              const Text('または', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-              SignUpWithGoogle(
-                onSignInComplete: _onSignInComplete,
-                buttonText: 'Googleでサインイン',
-              ),
-              SignUpWithApple(
-                onSignInComplete: _onSignInComplete,
-                buttonText: 'Appleでサインイン',
-              ),
-              const SizedBox(height: 64),
-              const Text('まだ、アカウントをお持ちでない方は', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateAccount()),
-                  );
-                },
-                child: const Text(
-                  'こちら',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class EmailPasswordLogin extends StatefulWidget {
-  final Function(BuildContext, String) onSignInComplete;
-
-  const EmailPasswordLogin({Key? key, required this.onSignInComplete}) : super(key: key);
-
-  @override
-  _EmailPasswordLoginState createState() => _EmailPasswordLoginState();
-}
-
-class _EmailPasswordLoginState extends State<EmailPasswordLogin> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-
-  void _login() async {
-    try {
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      if (userCredential.user != null) {
-        widget.onSignInComplete(context, userCredential.user!.uid);
-      }
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      if (e.code == 'user-not-found') {
-        errorMessage = 'このメールアドレスのユーザーが見つかりません。';
-      } else if (e.code == 'wrong-password') {
-        errorMessage = 'パスワードが間違っています。';
-      } else {
-        errorMessage = 'ログインに失敗しました。もう一度お試しください。';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ログインに失敗しました。もう一度お試しください。', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),)),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextField(
-          controller: _emailController,
-          decoration: const InputDecoration(
-            labelText: 'メールアドレス',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.emailAddress,
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _passwordController,
-          decoration: InputDecoration(
-            labelText: 'パスワード',
-            border: const OutlineInputBorder(),
-            suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
             ),
-          ),
-          obscureText: _obscurePassword,
+            const SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'パスワード',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: const Text('ログイン', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+            if (_showVerificationMessage)
+              Container(
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[100],
+                  border: Border.all(color: Colors.red),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  '認証メールを送信しています。メール内に記載されたURLをクリックし、認証を完了してください。\n※ 「迷惑メールボックス」に入っている場合もあります。',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            const SizedBox(height: 16),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'アカウント未登録の方は'),
+                  TextSpan(
+                    text: 'こちら',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CreateAccountPage()),
+                      );
+                      if (result == true) {
+                        setState(() {
+                          _showVerificationMessage = true;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'パスワードを忘れた方は'),
+                  TextSpan(
+                    text: 'こちら',
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PasswordResetPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: _login,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[700],
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          child: const Text('ログイン', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
-        ),
-      ],
+      ),
     );
   }
 

@@ -32,7 +32,8 @@ class FollowerState extends State<Follower> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('フォロワー', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text('フォロワー', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

@@ -194,8 +194,11 @@ class ProfileEditState extends State<ProfileEdit> {
         appBar: AppBar(
           title: const Text('プロフィール編集',
               style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               )),
+          backgroundColor: Colors.blue,
         ),
         body: Form(
           key: _formKey,

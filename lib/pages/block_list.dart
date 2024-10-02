@@ -31,7 +31,8 @@ class BlockListState extends State<BlockList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ブロックリスト', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('ブロックリスト', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

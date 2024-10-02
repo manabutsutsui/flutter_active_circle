@@ -60,10 +60,11 @@ class PostPageState extends State<PostPage> {
             .ref()
             .child('post_images')
             .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-        
-        await storageRef.putData(compressedImage, SettableMetadata(contentType: 'image/jpeg'));
+
+        await storageRef.putData(
+            compressedImage, SettableMetadata(contentType: 'image/jpeg'));
         final imageUrl = await storageRef.getDownloadURL();
-        
+
         return imageUrl;
       }
     } catch (e) {
@@ -108,7 +109,8 @@ class PostPageState extends State<PostPage> {
         throw Exception('画像のアップロードに失敗しました');
       }
 
-      final userRef = FirebaseFirestore.instance.collection('profiles').doc(user.uid);
+      final userRef =
+          FirebaseFirestore.instance.collection('profiles').doc(user.uid);
       final postRef = userRef.collection('posts').doc();
 
       await postRef.set({
@@ -169,19 +171,19 @@ class PostPageState extends State<PostPage> {
 
   Future getImage(ImageSource source) async {
     try {
-        final pickedFile = await picker.pickImage(source: source);
-        if (pickedFile != null) {
-            setState(() {
-                _image = File(pickedFile.path);
-            });
-        } else {
-            throw Exception('画像が選択されませんでした');
-        }
+      final pickedFile = await picker.pickImage(source: source);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      } else {
+        throw Exception('画像が選択されませんでした');
+      }
     } catch (e) {
-        print('画像の取得に失敗しました: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('画像の取得に失敗しました。')),
-        );
+      print('画像の取得に失敗しました: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('画像の取得に失敗しました。')),
+      );
     }
   }
 
@@ -240,7 +242,12 @@ class PostPageState extends State<PostPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('投稿', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('投稿',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.blue,
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -284,7 +291,8 @@ class PostPageState extends State<PostPage> {
                     InkWell(
                       onTap: _showSportTagPicker,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(4),

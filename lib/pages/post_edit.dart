@@ -199,7 +199,8 @@ class PostEditState extends State<PostEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('投稿を編集', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('投稿を編集', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue,
       ),
       body: Form(
         key: _formKey,
